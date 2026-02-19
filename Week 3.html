@@ -1,0 +1,148 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TechFest 2026 | Registration</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: linear-gradient(135deg, #1d2671, #c33764);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .form-container {
+      background: #ffffff;
+      width: 100%;
+      max-width: 560px;
+      padding: 45px 50px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 6px;
+      color: #1d2671;
+    }
+    p {
+      text-align: center;
+      margin-bottom: 35px;
+      color: #555;
+      font-size: 0.95rem;
+    }
+    fieldset {
+      border: 1px solid #ddd;
+      border-radius: 14px;
+      padding: 25px 25px 10px;
+      margin-bottom: 30px;
+    }
+    legend {
+      padding: 0 10px;
+      font-weight: 700;
+      color: #1d2671;
+      font-size: 0.95rem;
+    }
+    label {
+      display: block;
+      margin-top: 18px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #1d2671;
+    }
+    button {
+      width: 100%;
+      background: #1d2671;
+      color: white;
+      padding: 14px;
+      font-size: 1.05rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #142056;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="form-container">
+    <h1>TechFest 2026</h1>
+    <p>College Technical Event Registration Form</p>
+
+    <form>
+
+      <fieldset class="block">
+        <legend>Student Details</legend>
+
+        <label for="name">Full Name</label>
+        <input type="text" id="name" placeholder="Enter your full name" required />
+
+        <label for="prn">PRN (9 Digits)</label>
+        <input type="text" id="prn" placeholder="Enter 9-digit PRN" pattern="[0-9]{9}" maxlength="9" required />
+
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="example@email.com" required />
+
+        <label for="phone">Mobile Number</label>
+        <input type="tel" id="phone" placeholder="10-digit mobile number" required />
+      </fieldset>
+
+      <fieldset class="block">
+        <legend>Academic Details</legend>
+
+        <label for="year">Year of Study</label>
+        <select id="year" required>
+          <option value="">Select</option>
+          <option>First Year</option>
+          <option>Second Year</option>
+          <option>Third Year</option>
+          <option>Final Year</option>
+        </select>
+
+        <label for="branch">Branch / Department</label>
+        <input type="text" id="branch" placeholder="CSE, IT, ECE, etc." required />
+      </fieldset>
+
+      <fieldset class="block">
+        <legend>Event Selection</legend>
+
+        <label for="event">Choose Event</label>
+        <select id="event" required>
+          <option value="">Select an event</option>
+          <option>Hackathon</option>
+          <option>Coding Contest</option>
+          <option>Robotics</option>
+          <option>Paper Presentation</option>
+          <option>Tech Quiz</option>
+        </select>
+      </fieldset>
+
+      <button type="submit">Register Now</button>
+    </form>
+
+    <div class="note">
+      * You will receive confirmation details via email.
+    </div>
+  </div>
+
+</body>
+</html>

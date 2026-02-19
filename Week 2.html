@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tasty Bites | Menu</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: #fafafa;
+      color: #333;
+    }
+    header {
+      background: linear-gradient(135deg, #c0392b, #e74c3c);
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+    }
+    header p {
+      margin-top: 8px;
+      font-size: 1.1rem;
+      opacity: 0.95;
+    }
+    section {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #c0392b;
+      margin-bottom: 25px;
+      font-size: 2rem;
+      position: relative;
+    }
+    h2::after {
+      content: "";
+      display: block;
+      width: 80px;
+      height: 3px;
+      background: #c0392b;
+      margin: 10px auto 0;
+      border-radius: 5px;
+    }
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .menu-card {
+      background: white;
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .menu-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+    }
+    .menu-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px dashed #ddd;
+      font-size: 0.95rem;
+    }
+    .menu-item:last-child {
+      border-bottom: none;
+    }
+    .menu-item span {
+      font-weight: bold;
+      color: #c0392b;
+    }
+    footer {
+      background: #333;
+      color: white;
+      text-align: center;
+      padding: 18px;
+      margin-top: 50px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Tasty Bites Restaurant</h1>
+    <p>Delicious food • Fresh ingredients • Great taste</p>
+  </header>
+
+  <section>
+    <h2>Starters</h2>
+    <div class="menu-grid">
+      <div class="menu-card">
+        <div class="menu-item"><p>Veg Spring Rolls</p><span>₹120</span></div>
+        <div class="menu-item"><p>Paneer Tikka</p><span>₹180</span></div>
+        <div class="menu-item"><p>Hara Bhara Kebab</p><span>₹160</span></div>
+        <div class="menu-item"><p>Crispy Corn</p><span>₹150</span></div>
+      </div>
+      <div class="menu-card">
+        <div class="menu-item"><p>Chilli Paneer</p><span>₹200</span></div>
+        <div class="menu-item"><p>Chicken Lollipop</p><span>₹220</span></div>
+        <div class="menu-item"><p>Chicken 65</p><span>₹240</span></div>
+        <div class="menu-item"><p>Chicken Tikka</p><span>₹260</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Main Course</h2>
+    <div class="menu-grid">
+      <div class="menu-card">
+        <div class="menu-item"><p>Butter Paneer Masala</p><span>₹260</span></div>
+        <div class="menu-item"><p>Paneer Handi</p><span>₹250</span></div>
+        <div class="menu-item"><p>Veg Kolhapuri</p><span>₹230</span></div>
+        <div class="menu-item"><p>Dal Tadka</p><span>₹180</span></div>
+      </div>
+      <div class="menu-card">
+        <div class="menu-item"><p>Veg Biryani</p><span>₹200</span></div>
+        <div class="menu-item"><p>Chicken Curry</p><span>₹290</span></div>
+        <div class="menu-item"><p>Butter Chicken</p><span>₹320</span></div>
+        <div class="menu-item"><p>Chicken Biryani</p><span>₹280</span></div>
+      </div>
+      <div class="menu-card">
+        <div class="menu-item"><p>Jeera Rice</p><span>₹140</span></div>
+        <div class="menu-item"><p>Tandoori Roti</p><span>₹25</span></div>
+        <div class="menu-item"><p>Butter Naan</p><span>₹40</span></div>
+        <div class="menu-item"><p>Plain Rice</p><span>₹120</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Beverages</h2>
+    <div class="menu-grid">
+      <div class="menu-card">
+        <div class="menu-item"><p>Soft Drinks</p><span>₹60</span></div>
+        <div class="menu-item"><p>Fresh Lime Soda</p><span>₹80</span></div>
+        <div class="menu-item"><p>Cold Coffee</p><span>₹120</span></div>
+        <div class="menu-item"><p>Masala Chaas</p><span>₹50</span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2026 Tasty Bites Restaurant | All Rights Reserved</p>
+  </footer>
+
+</body>
+</html>
