@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Shop - Product Listing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background: #f6f7fb;
+    }
+
+    header {
+      background: #111827;
+      color: #fff;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 20px auto;
+      padding: 0 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+    }
+
+    .card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      background-color: #eee;
+    }
+
+    .card-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .price {
+      color: #16a34a;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+
+    .btn {
+      margin-top: auto;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .btn:hover {
+      background: #1d4ed8;
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px;
+      color: #666;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Simple Shop</h1>
+    <p>Premium Tech & Lifestyle Gear</p>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+
+      <div class="card">
+        <img src="JBL Tune 520BT wireless Headphone with mic.jfif" alt="JBL Tune 520BT">
+        <div class="card-body">
+          <div class="title">JBL Tune 520BT Wireless</div>
+          <div class="price">₹3,999</div>
+          <button class="btn" onclick="addToCart('JBL Tune 520BT')">Add to Cart</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <img src="Samsung Galaxy Watch6 welcome to my new home ❤️.jfif" alt="Galaxy Watch6">
+        <div class="card-body">
+          <div class="title">Samsung Galaxy Watch6</div>
+          <div class="price">₹29,999</div>
+          <button class="btn" onclick="addToCart('Samsung Galaxy Watch6')">Add to Cart</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <img src="Herren Turnschuhe Komfort Schuhe Rennen Wanderschuhe Sport Sportlich PU Schnürsenkel Schwarz und weiss Weiß _ Silber Orange _ Schwarz Herbst.jfif" alt="Sport Sneakers">
+        <div class="card-body">
+          <div class="title">Guochao Sport Sneakers</div>
+          <div class="price">₹5,499</div>
+          <button class="btn" onclick="addToCart('Guochao Sport Sneakers')">Add to Cart</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <img src="Mochila Masculina Impermeável Prova D`agua Com Saída USB Divisório Interno Para Laptop Envio Sortido.jfif" alt="Waterproof Backpack">
+        <div class="card-body">
+          <div class="title">Waterproof USB Backpack</div>
+          <div class="price">₹4,200</div>
+          <button class="btn" onclick="addToCart('Waterproof USB Backpack')">Add to Cart</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <img src="Literally Just 10 Products We Really Love Right Now.jfif" alt="Kakashi Mug">
+        <div class="card-body">
+          <div class="title">Kakashi "Icha Icha" Coffee Mug</div>
+          <div class="price">₹899</div>
+          <button class="btn" onclick="addToCart('Kakashi Coffee Mug')">Add to Cart</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <img src="XVX  Kurosaki  Cherry Profile  Double shot  Dye-Sub PBT Keycap Set 130-Key - Kurosaki.jfif" alt="XVX Kurosaki Keycaps">
+        <div class="card-body">
+          <div class="title">XVX Kurosaki PBT Keycap Set</div>
+          <div class="price">₹2,850</div>
+          <button class="btn" onclick="addToCart('XVX Kurosaki Keycaps')">Add to Cart</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <img src="Water Bottle in Black - OS _ Black.jfif" alt="American Tall Bottle">
+        <div class="card-body">
+          <div class="title">American Tall Matte Bottle</div>
+          <div class="price">₹1,750</div>
+          <button class="btn" onclick="addToCart('American Tall Bottle')">Add to Cart</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <img src="Table lamp for home decor.jfif" alt="Vintage Desk Lamp">
+        <div class="card-body">
+          <div class="title">Vintage Bronze Desk Lamp</div>
+          <div class="price">₹2,499</div>
+          <button class="btn" onclick="addToCart('Vintage Desk Lamp')">Add to Cart</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    © 2026 Simple Shop | Quality Lifestyle Products
+  </footer>
+
+  <script>
+    function addToCart(productName) {
+      alert(productName + " added to cart!");
+    }
+  </script>
+</body>
+</html>
