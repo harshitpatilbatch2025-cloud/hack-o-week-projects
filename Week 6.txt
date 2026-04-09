@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Structure Quiz</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #333;
+        }
+
+        .container {
+            width: 60%;
+            margin: 40px auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #444;
+        }
+
+        .question {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f9f9f9;
+            transition: 0.3s;
+        }
+
+        .question:hover {
+            transform: scale(1.02);
+            background: #f1f1ff;
+        }
+
+        .options label {
+            display: block;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            background: #e6e6fa;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .options label:hover {
+            background: #d1d1ff;
+        }
+
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        button {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .correct {
+            background: #d4edda !important;
+        }
+
+        .wrong {
+            background: #f8d7da !important;
+        }
+
+        #result {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>📘 Data Structure Quiz</h1>
+
+    <form id="quizForm">
+
+        <div class="question">
+            <p><b>1. FIFO stands for?</b></p>
+            <div class="options">
+                <label><input type="radio" name="q1" value="wrong"> Fast Input Fast Output</label>
+                <label><input type="radio" name="q1" value="correct"> First In First Out</label>
+                <label><input type="radio" name="q1" value="wrong"> First Input First Output</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <p><b>2. LIFO is used in?</b></p>
+            <div class="options">
+                <label><input type="radio" name="q2" value="correct"> Stack</label>
+                <label><input type="radio" name="q2" value="wrong"> Queue</label>
+                <label><input type="radio" name="q2" value="wrong"> Tree</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <p><b>3. Recursion uses?</b></p>
+            <div class="options">
+                <label><input type="radio" name="q3" value="correct"> Stack</label>
+                <label><input type="radio" name="q3" value="wrong"> Queue</label>
+                <label><input type="radio" name="q3" value="wrong"> Array</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <p><b>4. Nodes connected by pointers?</b></p>
+            <div class="options">
+                <label><input type="radio" name="q4" value="correct"> Linked List</label>
+                <label><input type="radio" name="q4" value="wrong"> Array</label>
+                <label><input type="radio" name="q4" value="wrong"> Stack</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <p><b>5. Hierarchical data structure?</b></p>
+            <div class="options">
+                <label><input type="radio" name="q5" value="correct"> Tree</label>
+                <label><input type="radio" name="q5" value="wrong"> Queue</label>
+                <label><input type="radio" name="q5" value="wrong"> Stack</label>
+            </div>
+        </div>
+
+        <button type="button" onclick="checkAnswers()">Submit</button>
+
+    </form>
+
+    <div id="result"></div>
+
+</div>
+
+<script>
+function checkAnswers() {
+    let score = 0;
+    let total = 5;
+
+    let selected = document.querySelectorAll('input[type="radio"]:checked');
+
+    selected.forEach(ans => {
+        if (ans.value === "correct") {
+            score++;
+            ans.parentElement.classList.add("correct");
+        } else {
+            ans.parentElement.classList.add("wrong");
+        }
+    });
+
+    document.getElementById("result").innerHTML =
+        "🎯 Your Score: " + score + " / " + total;
+}
+</script>
+
+</body>
+</html>
