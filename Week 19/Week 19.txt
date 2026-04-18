@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playlist Shuffle — Doubly Linked List</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Martian+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #090910;
+    --surface:  #10101c;
+    --surface2: #15152a;
+    --border:   #232340;
+    --border2:  #2e2e55;
+    --pink:     #ff3d9a;
+    --pink2:    #ff6bb5;
+    --purple:   #8b5cf6;
+    --purple2:  #a78bfa;
+    --cyan:     #22d3ee;
+    --green:    #34d399;
+    --yellow:   #fbbf24;
+    --text:     #e2e0f0;
+    --muted:    #4a4870;
+    --dim:      #0d0d1a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse 60% 40% at 20% 0%, rgba(139,92,246,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 35% at 80% 100%, rgba(255,61,154,0.1) 0%, transparent 55%);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    padding: 32px 14px 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    animation: fadeDown 0.6s ease both;
+  }
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .eyebrow {
+    font-family: 'Martian Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--pink);
+    margin-bottom: 8px;
+    opacity: 0.8;
+  }
+  .header h1 {
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    font-weight: 900;
+    line-height: 1;
+    background: linear-gradient(135deg, #fff 0%, var(--pink2) 50%, var(--purple2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+  }
+  .header p {
+    font-family: 'Martian Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    margin-top: 8px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  /* ── Layout ── */
+  .layout {
+    width: 100%;
+    max-width: 1060px;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 16px;
+  }
+
+  /* ── Panel ── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .panel-head {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 11px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: 'Martian Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .badge {
+    font-family: 'Martian Mono', monospace;
+    font-size: 0.58rem;
+    padding: 2px 9px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+  }
+  .badge-pink   { border: 1px solid var(--pink);   color: var(--pink);   background: rgba(255,61,154,0.08); }
+  .badge-purple { border: 1px solid var(--purple2); color: var(--purple2); background: rgba(139,92,246,0.08); }
+  .badge-cyan   { border: 1px solid var(--cyan);   color: var(--cyan);   background: rgba(34,211,238,0.08); }
+  .badge-green  { border: 1px solid var(--green);  color: var(--green);  background: rgba(52,211,153,0.08); }
+
+  /* ── Controls ── */
+  .ctrl-body { padding: 16px; }
+  .field-label {
+    font-family: 'Martian Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 7px;
+  }
+  .field-group { margin-bottom: 14px; }
+
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    background: var(--dim);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.88rem;
+    padding: 9px 13px;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input:focus { border-color: var(--pink); box-shadow: 0 0 0 3px rgba(255,61,154,0.1); }
+  input::placeholder { color: var(--muted); font-size: 0.82rem; }
+
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .btn {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 0.78rem;
+    letter-spacing: 0.5px;
+    padding: 9px 14px;
+    border-radius: 8px;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 100%;
+    margin-bottom: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .btn:active:not(:disabled) { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.22; cursor: not-allowed; transform: none !important; }
+
+  .btn-front  { background: rgba(255,61,154,0.1);  border-color: var(--pink);    color: var(--pink2); }
+  .btn-front:hover:not(:disabled)  { background: rgba(255,61,154,0.2); box-shadow: 0 0 14px rgba(255,61,154,0.2); }
+  .btn-end    { background: rgba(139,92,246,0.1);  border-color: var(--purple);  color: var(--purple2); }
+  .btn-end:hover:not(:disabled)    { background: rgba(139,92,246,0.2); box-shadow: 0 0 14px rgba(139,92,246,0.2); }
+  .btn-del    { background: rgba(34,211,238,0.08); border-color: var(--cyan);    color: var(--cyan); }
+  .btn-del:hover:not(:disabled)    { background: rgba(34,211,238,0.15); }
+  .btn-shuffle { background: rgba(251,191,36,0.1); border-color: var(--yellow);  color: var(--yellow); }
+  .btn-shuffle:hover:not(:disabled) { background: rgba(251,191,36,0.2); box-shadow: 0 0 14px rgba(251,191,36,0.2); }
+  .btn-reset  { background: rgba(255,61,154,0.05); border-color: var(--border2); color: var(--muted); }
+  .btn-reset:hover { border-color: var(--pink); color: var(--pink); }
+
+  hr.divider { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+
+  /* ── Linked list visualizer (horizontal) ── */
+  .viz-panel { grid-column: 2; grid-row: 1 / 3; display: flex; flex-direction: column; }
+  #viz-wrap {
+    padding: 20px 16px 10px;
+    overflow-x: auto;
+    overflow-y: visible;
+    min-height: 200px;
+  }
+  #viz-wrap::-webkit-scrollbar { height: 4px; }
+  #viz-wrap::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .ll-track {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 30px 10px 30px;
+    min-width: max-content;
+    position: relative;
+  }
+
+  .ll-null {
+    font-family: 'Martian Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    padding: 0 10px;
+    letter-spacing: 1px;
+  }
+
+  .ll-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: nodeIn 0.35s cubic-bezier(.175,.885,.32,1.275) both;
+  }
+  @keyframes nodeIn {
+    from { opacity: 0; transform: scale(0.6) translateY(-10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .node-card {
+    width: 110px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .node-card:hover { border-color: var(--pink); box-shadow: 0 0 16px rgba(255,61,154,0.15); }
+  .node-card.head-node  { border-color: var(--pink);   box-shadow: 0 0 14px rgba(255,61,154,0.2); }
+  .node-card.tail-node  { border-color: var(--purple2); box-shadow: 0 0 14px rgba(139,92,246,0.2); }
+  .node-card.shuffle-hi { border-color: var(--yellow);  box-shadow: 0 0 14px rgba(251,191,36,0.25); }
+
+  .node-ptr {
+    background: var(--dim);
+    border-bottom: 1px solid var(--border);
+    padding: 4px 8px;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Martian Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--muted);
+  }
+  .ptr-prev { color: var(--pink); }
+  .ptr-next { color: var(--purple2); }
+
+  .node-body { padding: 8px; text-align: center; }
+  .node-emoji { font-size: 1.4rem; line-height: 1; margin-bottom: 3px; }
+  .node-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 94px;
+  }
+  .node-artist {
+    font-size: 0.6rem;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 94px;
+    margin-top: 1px;
+  }
+  .node-idx {
+    font-family: 'Martian Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--border2);
+    margin-top: 4px;
+  }
+
+  .node-tag {
+    position: absolute;
+    top: -1px; left: -1px;
+    font-family: 'Martian Mono', monospace;
+    font-size: 0.5rem;
+    padding: 2px 6px;
+    border-radius: 10px 0 6px 0;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+  .tag-head { background: var(--pink);    color: #fff; }
+  .tag-tail { background: var(--purple2); color: #fff; }
+  .tag-both { background: var(--green);   color: #fff; }
+
+  /* Arrows between nodes */
+  .ll-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 0 2px;
+  }
+  .arrow-fwd, .arrow-bwd {
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .arrow-fwd { color: var(--purple2); }
+  .arrow-bwd { color: var(--pink); }
+  .arrow-line {
+    width: 28px;
+    height: 1.5px;
+    border-radius: 1px;
+  }
+  .fwd-line { background: var(--purple2); }
+  .bwd-line { background: var(--pink); }
+
+  /* Pointer labels below */
+  .node-labels {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    margin-top: 6px;
+    font-family: 'Martian Mono', monospace;
+    font-size: 0.52rem;
+    letter-spacing: 1px;
+  }
+  .lbl-head { color: var(--pink); }
+  .lbl-tail { color: var(--purple2); }
+
+  /* Empty state */
+  .ll-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 160px;
+    color: var(--muted);
+    font-family: 'Martian Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  /* ── Playlist rows ── */
+  .playlist-body {
+    padding: 10px 14px;
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  .playlist-body::-webkit-scrollbar { width: 3px; }
+  .playlist-body::-webkit-scrollbar-thumb { background: var(--border2); }
+
+  .pl-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--dim);
+    border: 1px solid transparent;
+    margin-bottom: 5px;
+    transition: all 0.2s;
+    animation: rowIn 0.3s ease both;
+    cursor: default;
+  }
+  @keyframes rowIn {
+    from { opacity:0; transform:translateX(-8px); }
+    to   { opacity:1; transform:none; }
+  }
+  .pl-row:hover { border-color: var(--border2); }
+  .pl-row.is-head { border-color: rgba(255,61,154,0.4); }
+  .pl-row.is-tail { border-color: rgba(139,92,246,0.4); }
+
+  .pl-num {
+    font-family: 'Martian Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    width: 18px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .pl-emoji { font-size: 1.1rem; flex-shrink: 0; }
+  .pl-info { flex: 1; overflow: hidden; }
+  .pl-title { font-size: 0.82rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pl-artist { font-size: 0.65rem; color: var(--muted); }
+  .pl-badge-wrap { display: flex; gap: 4px; flex-shrink: 0; }
+
+  /* ── Stats bar ── */
+  .stats-bar {
+    display: flex;
+    gap: 0;
+    border-top: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .stat-cell {
+    flex: 1;
+    padding: 10px 14px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .stat-cell:last-child { border-right: none; }
+  .stat-lbl { font-family: 'Martian Mono', monospace; font-size: 0.52rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+  .stat-val { font-size: 1rem; font-weight: 700; }
+  .stat-val.pink { color: var(--pink); }
+  .stat-val.purple { color: var(--purple2); }
+  .stat-val.yellow { color: var(--yellow); }
+  .stat-val.cyan { color: var(--cyan); }
+
+  /* ── Log ── */
+  .log-body {
+    padding: 10px 14px;
+    max-height: 130px;
+    overflow-y: auto;
+    font-family: 'Martian Mono', monospace;
+    font-size: 0.6rem;
+  }
+  .log-body::-webkit-scrollbar { width: 3px; }
+  .log-body::-webkit-scrollbar-thumb { background: var(--border2); }
+  .log-entry { display: flex; gap: 8px; padding: 3px 0; border-bottom: 1px solid rgba(35,35,64,0.5); animation: rowIn 0.2s ease; }
+  .log-t { color: var(--muted); flex-shrink: 0; }
+  .log-m { }
+  .log-m.ok { color: var(--green); }
+  .log-m.err { color: var(--pink); }
+  .log-m.inf { color: var(--cyan); }
+  .log-m.shuffle { color: var(--yellow); }
+
+  /* ── Shuffle mode ── */
+  .shuffle-banner {
+    display: none;
+    background: linear-gradient(90deg, rgba(251,191,36,0.1), rgba(251,191,36,0.05));
+    border-top: 1px solid rgba(251,191,36,0.3);
+    padding: 8px 16px;
+    font-family: 'Martian Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: var(--yellow);
+    text-transform: uppercase;
+    align-items: center;
+    gap: 8px;
+  }
+  .shuffle-banner.active { display: flex; }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(40px);
+    background: var(--surface2);
+    border: 1px solid var(--pink);
+    color: var(--pink2);
+    padding: 9px 22px;
+    border-radius: 24px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    opacity: 0;
+    transition: all 0.25s;
+    pointer-events: none;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.err  { border-color: rgba(255,61,154,0.5); color: var(--muted); }
+
+  @media(max-width: 760px) {
+    .layout { grid-template-columns: 1fr; }
+    .viz-panel { grid-column: 1; grid-row: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">Data Structures · Topic 19</div>
+  <h1>Playlist Shuffle</h1>
+  <p>Doubly Linked List · Add Front/End · Delete · Reverse</p>
+</div>
+
+<div class="layout">
+
+  <!-- LEFT: Controls -->
+  <div style="display:flex;flex-direction:column;gap:14px;">
+
+    <div class="panel">
+      <div class="panel-head">Add Song <span class="badge badge-pink">Insert</span></div>
+      <div class="ctrl-body">
+        <div class="field-group">
+          <div class="field-label">Song Title</div>
+          <input type="text" id="song-input" placeholder="e.g. Blinding Lights" maxlength="24"/>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Artist</div>
+          <input type="text" id="artist-input" placeholder="e.g. The Weeknd" maxlength="20"/>
+        </div>
+        <div class="row-2">
+          <button class="btn btn-front" onclick="addFront()">⏮ Add Front</button>
+          <button class="btn btn-end"   onclick="addEnd()">⏭ Add End</button>
+        </div>
+        <hr class="divider">
+        <div class="field-label">Delete by Position (1-indexed)</div>
+        <div class="field-group" style="display:flex;gap:8px;margin-bottom:0">
+          <input type="number" id="del-pos" placeholder="Position" min="1" style="flex:1"/>
+          <button class="btn btn-del" style="width:auto;padding:9px 16px;margin:0" onclick="deleteByPos()">Delete</button>
+        </div>
+        <hr class="divider">
+        <button class="btn btn-shuffle" id="btn-shuffle" onclick="toggleShuffle()">🔀 Shuffle Mode (Reverse)</button>
+        <button class="btn btn-reset"   onclick="resetList()">↺ Reset Playlist</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="panel">
+      <div class="panel-head">List State</div>
+      <div class="stats-bar">
+        <div class="stat-cell">
+          <div class="stat-lbl">Size</div>
+          <div class="stat-val pink" id="st-size">0</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-lbl">Head</div>
+          <div class="stat-val purple" id="st-head">null</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-lbl">Tail</div>
+          <div class="stat-val cyan" id="st-tail">null</div>
+        </div>
+      </div>
+      <div class="stats-bar" style="border-top:none;">
+        <div class="stat-cell">
+          <div class="stat-lbl">Mode</div>
+          <div class="stat-val yellow" id="st-mode">Normal</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-lbl">Ops Done</div>
+          <div class="stat-val pink" id="st-ops">0</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-lbl">Shuffles</div>
+          <div class="stat-val yellow" id="st-shuffles">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="panel">
+      <div class="panel-head">Log</div>
+      <div class="log-body" id="log-body">
+        <div class="log-entry"><span class="log-t">--:--</span><span class="log-m inf">Ready. Add songs to begin.</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: Visualizer + Playlist rows -->
+  <div class="viz-panel panel">
+    <div class="panel-head">
+      <span>Doubly Linked List Visualizer</span>
+      <span id="viz-count" class="badge badge-purple">0 nodes</span>
+    </div>
+    <div id="viz-wrap">
+      <div class="ll-empty" id="ll-empty">— EMPTY PLAYLIST —</div>
+      <div class="ll-track" id="ll-track" style="display:none;"></div>
+    </div>
+
+    <div class="shuffle-banner" id="shuffle-banner">
+      <span>🔀</span> SHUFFLE MODE ACTIVE — LIST REVERSED
+    </div>
+
+    <div class="panel-head" style="border-top:1px solid var(--border);border-bottom:none;margin-top:0;">
+      <span>Playlist Order</span>
+      <span id="pl-count" class="badge badge-cyan">0 songs</span>
+    </div>
+    <div class="playlist-body" id="playlist-body">
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Doubly Linked List ───────────────────────────────────────
+class DLLNode {
+  constructor(song, artist, emoji) {
+    this.song   = song;
+    this.artist = artist;
+    this.emoji  = emoji;
+    this.prev   = null;
+    this.next   = null;
+  }
+}
+
+class DoublyLinkedList {
+  constructor() {
+    this.head = null;
+    this.tail = null;
+    this.size = 0;
+  }
+
+  addFront(song, artist, emoji) {
+    const node = new DLLNode(song, artist, emoji);
+    if (!this.head) {
+      this.head = this.tail = node;
+    } else {
+      node.next       = this.head;
+      this.head.prev  = node;
+      this.head       = node;
+    }
+    this.size++;
+  }
+
+  addEnd(song, artist, emoji) {
+    const node = new DLLNode(song, artist, emoji);
+    if (!this.tail) {
+      this.head = this.tail = node;
+    } else {
+      node.prev      = this.tail;
+      this.tail.next = node;
+      this.tail      = node;
+    }
+    this.size++;
+  }
+
+  deleteAt(pos) { // 1-indexed
+    if (pos < 1 || pos > this.size) return null;
+    let cur = this.head;
+    for (let i = 1; i < pos; i++) cur = cur.next;
+    if (cur.prev) cur.prev.next = cur.next;
+    else          this.head     = cur.next;
+    if (cur.next) cur.next.prev = cur.prev;
+    else          this.tail     = cur.prev;
+    this.size--;
+    return cur;
+  }
+
+  // Reverse the list in place (shuffle mode)
+  reverse() {
+    let cur = this.head;
+    let tmp = null;
+    while (cur) {
+      tmp      = cur.prev;
+      cur.prev = cur.next;
+      cur.next = tmp;
+      cur      = cur.prev; // advance (prev is now the old next)
+    }
+    if (tmp) this.head = tmp.prev; // tmp is last node processed; its prev is the new head
+    // recalculate head/tail
+    this.tail = this.head;
+    let node  = this.head;
+    while (node && node.next) { this.tail = node.next; node = node.next; }
+  }
+
+  toArray() {
+    const arr = [];
+    let cur = this.head;
+    while (cur) { arr.push(cur); cur = cur.next; }
+    return arr;
+  }
+}
+
+const dll = new DoublyLinkedList();
+let shuffled    = false;
+let totalOps    = 0;
+let totalShuffs = 0;
+
+const EMOJIS = ['🎵','🎸','🎹','🎷','🎺','🎻','🥁','🎤','🎧','🎼','🪗','🪘','🪕','🎙'];
+const SONGS  = [
+  ['Blinding Lights','The Weeknd'],['Levitating','Dua Lipa'],
+  ['Peaches','Justin Bieber'],['Good 4 U','Olivia Rodrigo'],
+  ['Stay','The Kid LAROI'],['Industry Baby','Lil Nas X'],
+  ['Shivers','Ed Sheeran'],['Easy On Me','Adele'],
+  ['Heat Waves','Glass Animals'],['As It Was','Harry Styles'],
+  ['About Damn Time','Lizzo'],['Unholy','Sam Smith']
+];
+let songIdx = 0;
+
+function pickEmoji() { return EMOJIS[Math.floor(Math.random() * EMOJIS.length)]; }
+
+function getSongInput() {
+  let song   = document.getElementById('song-input').value.trim();
+  let artist = document.getElementById('artist-input').value.trim();
+  if (!song) {
+    // auto-fill
+    const [s, a] = SONGS[songIdx % SONGS.length]; songIdx++;
+    song = s; artist = a;
+  }
+  if (!artist) artist = 'Unknown Artist';
+  document.getElementById('song-input').value  = '';
+  document.getElementById('artist-input').value = '';
+  return [song, artist, pickEmoji()];
+}
+
+function addFront() {
+  const [song, artist, emoji] = getSongInput();
+  dll.addFront(song, artist, emoji);
+  totalOps++;
+  log(`addFront: "${song}" by ${artist}`, 'ok');
+  toast(`⏮ "${song}" added to front`);
+  render();
+}
+
+function addEnd() {
+  const [song, artist, emoji] = getSongInput();
+  dll.addEnd(song, artist, emoji);
+  totalOps++;
+  log(`addEnd: "${song}" by ${artist}`, 'ok');
+  toast(`⏭ "${song}" added to end`);
+  render();
+}
+
+function deleteByPos() {
+  const pos = parseInt(document.getElementById('del-pos').value);
+  if (isNaN(pos) || pos < 1) { toast('Enter a valid position', true); return; }
+  if (dll.size === 0) { toast('Playlist is empty', true); return; }
+  if (pos > dll.size) { toast(`Position ${pos} out of range (size=${dll.size})`, true); return; }
+  const removed = dll.deleteAt(pos);
+  document.getElementById('del-pos').value = '';
+  totalOps++;
+  log(`deleteAt(${pos}): removed "${removed.song}"`, 'err');
+  toast(`🗑 "${removed.song}" removed`);
+  render();
+}
+
+function toggleShuffle() {
+  if (dll.size < 2) { toast('Add at least 2 songs to shuffle', true); return; }
+  dll.reverse();
+  shuffled = !shuffled;
+  totalOps++; totalShuffs++;
+  log(`reverse(): list ${shuffled ? 'reversed' : 'restored'}`, 'shuffle');
+  toast(shuffled ? '🔀 Shuffled!' : '▶ Normal order restored');
+  render();
+}
+
+function resetList() {
+  dll.head = dll.tail = null; dll.size = 0;
+  shuffled = false; totalOps = 0; totalShuffs = 0; songIdx = 0;
+  log('Playlist reset.', 'inf');
+  toast('Playlist cleared');
+  render();
+}
+
+// ── Render ───────────────────────────────────────────────────
+function render() {
+  renderViz();
+  renderPlaylist();
+  renderStats();
+}
+
+function renderStats() {
+  const nodes = dll.toArray();
+  document.getElementById('st-size').textContent     = dll.size;
+  document.getElementById('st-head').textContent     = dll.head ? trunc(dll.head.song, 8) : 'null';
+  document.getElementById('st-tail').textContent     = dll.tail ? trunc(dll.tail.song, 8) : 'null';
+  document.getElementById('st-mode').textContent     = shuffled ? 'Shuffle 🔀' : 'Normal ▶';
+  document.getElementById('st-ops').textContent      = totalOps;
+  document.getElementById('st-shuffles').textContent = totalShuffs;
+  document.getElementById('viz-count').textContent   = dll.size + ' node' + (dll.size!==1?'s':'');
+  document.getElementById('pl-count').textContent    = dll.size + ' song' + (dll.size!==1?'s':'');
+  document.getElementById('shuffle-banner').className = 'shuffle-banner' + (shuffled ? ' active' : '');
+  document.getElementById('btn-shuffle').textContent  = shuffled ? '▶ Normal Mode (Un-Reverse)' : '🔀 Shuffle Mode (Reverse)';
+}
+
+function renderViz() {
+  const nodes  = dll.toArray();
+  const empty  = document.getElementById('ll-empty');
+  const track  = document.getElementById('ll-track');
+
+  if (!nodes.length) {
+    empty.style.display = 'flex';
+    track.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  track.style.display = 'flex';
+
+  let html = `<span class="ll-null">NULL ←</span>`;
+
+  nodes.forEach((node, i) => {
+    const isHead = (i === 0);
+    const isTail = (i === nodes.length - 1);
+    const isBoth = (isHead && isTail);
+
+    let cardCls = 'node-card';
+    if (isBoth)       cardCls += ' head-node tail-node';
+    else if (isHead)  cardCls += ' head-node';
+    else if (isTail)  cardCls += ' tail-node';
+    if (shuffled)     cardCls += ' shuffle-hi';
+
+    let tagHtml = '';
+    if (isBoth)      tagHtml = `<span class="node-tag tag-both">H+T</span>`;
+    else if (isHead) tagHtml = `<span class="node-tag tag-head">HEAD</span>`;
+    else if (isTail) tagHtml = `<span class="node-tag tag-tail">TAIL</span>`;
+
+    const prevTxt = isHead ? 'NULL' : '←';
+    const nextTxt = isTail ? 'NULL' : '→';
+
+    html += `
+      <div class="ll-node">
+        <div class="${cardCls}">
+          ${tagHtml}
+          <div class="node-ptr">
+            <span class="ptr-prev">${prevTxt}</span>
+            <span class="ptr-next">${nextTxt}</span>
+          </div>
+          <div class="node-body">
+            <div class="node-emoji">${node.emoji}</div>
+            <div class="node-title">${esc(node.song)}</div>
+            <div class="node-artist">${esc(node.artist)}</div>
+            <div class="node-idx">[${i}]</div>
+          </div>
+        </div>
+      </div>`;
+
+    if (i < nodes.length - 1) {
+      html += `
+        <div class="ll-arrow">
+          <div class="arrow-fwd"><div class="arrow-line fwd-line"></div><span>▶</span></div>
+          <div class="arrow-bwd"><span>◀</span><div class="arrow-line bwd-line"></div></div>
+        </div>`;
+    }
+  });
+
+  html += `<span class="ll-null">→ NULL</span>`;
+  track.innerHTML = html;
+}
+
+function renderPlaylist() {
+  const body  = document.getElementById('playlist-body');
+  const nodes = dll.toArray();
+  if (!nodes.length) { body.innerHTML = ''; return; }
+
+  body.innerHTML = nodes.map((node, i) => {
+    const isHead = i === 0;
+    const isTail = i === nodes.length - 1;
+    let cls = 'pl-row';
+    if (isHead) cls += ' is-head';
+    if (isTail) cls += ' is-tail';
+    const tags = [];
+    if (isHead) tags.push(`<span class="badge badge-pink">HEAD</span>`);
+    if (isTail) tags.push(`<span class="badge badge-purple">TAIL</span>`);
+    return `<div class="${cls}">
+      <span class="pl-num">${i+1}</span>
+      <span class="pl-emoji">${node.emoji}</span>
+      <div class="pl-info">
+        <div class="pl-title">${esc(node.song)}</div>
+        <div class="pl-artist">${esc(node.artist)}</div>
+      </div>
+      <div class="pl-badge-wrap">${tags.join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Helpers ──────────────────────────────────────────────────
+function trunc(s, n) { return s.length > n ? s.slice(0,n)+'…' : s; }
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function log(msg, type='') {
+  const body = document.getElementById('log-body');
+  const div  = document.createElement('div');
+  div.className = 'log-entry';
+  div.innerHTML = `<span class="log-t">${timeNow()}</span><span class="log-m ${type}">${msg}</span>`;
+  body.prepend(div);
+  while (body.children.length > 30) body.lastChild.remove();
+}
+
+function timeNow() {
+  return new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+let toastT;
+function toast(msg, err=false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (err ? ' err' : '');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.className='', 2300);
+}
+
+// Enter key → addEnd
+document.getElementById('song-input').addEventListener('keydown', e => { if(e.key==='Enter') addEnd(); });
+
+// ── Seed ─────────────────────────────────────────────────────
+[['Blinding Lights','The Weeknd'],['Levitating','Dua Lipa'],['As It Was','Harry Styles'],['Heat Waves','Glass Animals']].forEach(([s,a]) => {
+  dll.addEnd(s, a, pickEmoji());
+});
+totalOps = 0;
+log('Seeded with 4 songs.', 'ok');
+render();
+</script>
+</body>
+</html>
