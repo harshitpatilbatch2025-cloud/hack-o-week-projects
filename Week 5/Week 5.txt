@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Global Nomad | Travel Stories</title>
+  <style>
+    :root {
+      --primary-blue: #2563eb;
+      --dark-navy: #111827;
+      --text-gray: #4b5563;
+      --light-bg: #f3f4f6;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      line-height: 1.7;
+      margin: 0;
+      color: var(--text-gray);
+      background-color: var(--light-bg);
+    }
+
+    /* Hero Section */
+    header {
+      background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+                  url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2070&auto=format&fit=crop');
+      background-size: cover;
+      background-position: center;
+      height: 500px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    header h1 { font-size: 3.5rem; margin: 0; font-weight: 800; }
+    header p { font-size: 1.2rem; opacity: 0.9; max-width: 600px; }
+
+    /* Content Area */
+    .container {
+      max-width: 1000px;
+      margin: -80px auto 60px;
+      padding: 0 20px;
+    }
+
+    .blog-post {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      margin-bottom: 50px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    }
+
+    .post-category {
+      background: var(--primary-blue);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .blog-post h2 {
+      margin: 20px 0 10px;
+      color: var(--dark-navy);
+      font-size: 2.2rem;
+    }
+
+    .featured-img {
+      width: 100%;
+      height: 450px;
+      object-fit: cover;
+      border-radius: 15px;
+      margin: 25px 0;
+    }
+
+    /* Stats Box */
+    .trip-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: #f8fafc;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border: 1px solid #e2e8f0;
+    }
+
+    .stat-item strong { display: block; color: var(--dark-navy); }
+    .stat-item span { font-size: 0.95rem; }
+
+    /* Tip Box */
+    .travel-tip {
+      background: #fffbeb;
+      border-left: 5px solid #f59e0b;
+      padding: 20px;
+      margin: 25px 0;
+      font-style: italic;
+      color: #92400e;
+    }
+
+    footer {
+      background: var(--dark-navy);
+      color: white;
+      text-align: center;
+      padding: 50px 20px;
+    }
+
+    @media (max-width: 768px) {
+      .trip-stats { grid-template-columns: 1fr; gap: 15px; }
+      header h1 { font-size: 2.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>The Global Nomad</h1>
+    <p>Stories of adventure, culture, and the road less traveled.</p>
+  </header>
+
+  <div class="container">
+
+    <article class="blog-post">
+      <span class="post-category">Adventure</span>
+      <h2>The Silence of the Himalayas</h2>
+      
+      <div class="trip-stats">
+        <div class="stat-item"><strong>Duration</strong><span>12 Days</span></div>
+        <div class="stat-item"><strong>Budget</strong><span>₹45,000</span></div>
+        <div class="stat-item"><strong>Best Moment</strong><span>Star-gazing in Kaza</span></div>
+      </div>
+
+      <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop" class="featured-img" alt="Himalayas">
+      
+      <p>Reaching the Spiti Valley felt like arriving on another planet. The air is thin, the landscape is rugged, and the monasteries cling to cliffsides like ancient guardians. We trekked through the Pin Valley National Park, where the only sound was our own breathing and the occasional whistle of a marmot.</p>
+      
+      <div class="travel-tip">
+        <strong>Pro Tip:</strong> Always carry an extra power bank and a physical map. GPS in the high Himalayas is notoriously unreliable!
+      </div>
+    </article>
+
+    <article class="blog-post">
+      <span class="post-category">Relaxation</span>
+      <h2>Waking Up in Bali</h2>
+      
+      <div class="trip-stats">
+        <div class="stat-item"><strong>Duration</strong><span>7 Days</span></div>
+        <div class="stat-item"><strong>Budget</strong><span>₹65,000</span></div>
+        <div class="stat-item"><strong>Best Moment</strong><span>Sunrise at Mt. Batur</span></div>
+      </div>
+
+      <img src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=2076&auto=format&fit=crop" class="featured-img" alt="Bali">
+      
+      <p>Bali is more than just beaches. In Ubud, the cultural heart of the island, I spent my mornings walking through rice paddies and my afternoons learning traditional wood carving. The spiritual energy of the island is infectious—you can't help but slow down.</p>
+      
+      <div class="travel-tip">
+        <strong>Pro Tip:</strong> Rent a scooter to explore the hidden waterfalls in North Bali, but make sure you have an International Driving Permit.
+      </div>
+    </article>
+
+    <article class="blog-post">
+      <span class="post-category">Culture</span>
+      <h2>Neon Nights in Tokyo</h2>
+      
+      <div class="trip-stats">
+        <div class="stat-item"><strong>Duration</strong><span>10 Days</span></div>
+        <div class="stat-item"><strong>Budget</strong><span>₹1,80,000</span></div>
+        <div class="stat-item"><strong>Best Moment</strong><span>Ramen in a Shinjuku alley</span></div>
+      </div>
+
+      <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=2094&auto=format&fit=crop" class="featured-img" alt="Tokyo">
+      
+      <p>Tokyo is a beautiful assault on the senses. One minute you're in the hyper-modern chaos of Akihabara, and the next, you're walking through the peaceful Meiji Shrine forest. The food culture here is unmatched—even a convenience store egg sandwich is a culinary masterpiece.</p>
+      
+      <div class="travel-tip">
+        <strong>Pro Tip:</strong> Get a Suica or Pasmo card immediately for the subway. It makes navigating the massive rail network ten times easier.
+      </div>
+    </article>
+
+  </div>
+
+  <footer>
+    <h3>Ready for your next adventure?</h3>
+    <p>Follow my journey on Instagram @GlobalNomad</p>
+    <p>© 2026 The Global Nomad Journal</p>
+  </footer>
+
+</body>
+</html>
