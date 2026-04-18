@@ -1,0 +1,668 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task Manager — Undo/Redo Stack</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --border: #2a2a2a;
+    --accent: #c8f135;
+    --accent2: #ff5f3f;
+    --text: #e8e8e8;
+    --muted: #555;
+    --add: #c8f135;
+    --del: #ff5f3f;
+    --edit: #5fc8ff;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 16px 80px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  header p {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 900px;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .panel-header span { color: var(--accent); font-weight: 500; }
+
+  /* Input row */
+  .input-row {
+    display: flex;
+    gap: 8px;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .input-row input {
+    flex: 1;
+    background: #111;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.88rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-row input:focus { border-color: var(--accent); }
+  .input-row input::placeholder { color: var(--muted); }
+
+  .btn {
+    background: var(--accent);
+    color: #0d0d0d;
+    border: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.25; cursor: not-allowed; transform: none; }
+  .btn.red { background: var(--del); }
+  .btn.ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn.ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Task list */
+  .task-list {
+    padding: 12px;
+    min-height: 260px;
+    max-height: 420px;
+    overflow-y: auto;
+  }
+  .task-list::-webkit-scrollbar { width: 4px; }
+  .task-list::-webkit-scrollbar-track { background: transparent; }
+  .task-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    border: 1px solid transparent;
+    background: #111;
+    transition: background 0.15s, border-color 0.15s;
+    animation: slideIn 0.25s ease;
+  }
+  .task-item:hover { border-color: var(--border); }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-12px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes flashGreen {
+    0%   { background: rgba(200,241,53,0.2); }
+    100% { background: #111; }
+  }
+  @keyframes flashRed {
+    0%   { background: rgba(255,95,63,0.2); }
+    100% { background: #111; }
+  }
+  .flash-add  { animation: flashGreen 0.5s ease; }
+  .flash-del  { animation: flashRed 0.5s ease; }
+
+  .task-check {
+    width: 18px; height: 18px;
+    border: 2px solid var(--muted);
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .task-check.done { border-color: var(--accent); background: var(--accent); }
+  .task-check.done::after {
+    content: '✓';
+    font-size: 11px;
+    color: #0d0d0d;
+    font-weight: bold;
+  }
+
+  .task-text {
+    flex: 1;
+    font-size: 0.88rem;
+    transition: opacity 0.2s, text-decoration 0.2s;
+  }
+  .task-text.done {
+    text-decoration: line-through;
+    opacity: 0.4;
+  }
+
+  .task-edit-btn, .task-del-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 5px;
+    font-size: 0.75rem;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s;
+  }
+  .task-item:hover .task-edit-btn,
+  .task-item:hover .task-del-btn { opacity: 1; }
+  .task-edit-btn { color: var(--edit); }
+  .task-edit-btn:hover { background: rgba(95,200,255,0.1); }
+  .task-del-btn  { color: var(--del); }
+  .task-del-btn:hover  { background: rgba(255,95,63,0.1); }
+
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.82rem;
+    padding: 40px 20px;
+    letter-spacing: 1px;
+  }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  /* Stack visualizer */
+  .stack-section { display: flex; flex-direction: column; height: 100%; }
+  .stacks-wrap {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex: 1;
+  }
+  .stack-label {
+    font-size: 0.68rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .stack-label em {
+    color: var(--accent);
+    font-style: normal;
+    font-size: 0.78rem;
+  }
+
+  .stack-viz {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 4px;
+    min-height: 80px;
+  }
+  .stack-frame {
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.74rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid;
+    transition: all 0.3s ease;
+    animation: popIn 0.2s ease;
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scaleY(0.7); }
+    to   { opacity: 1; transform: scaleY(1); }
+  }
+  .stack-frame.undo-frame {
+    background: rgba(200,241,53,0.05);
+    border-color: rgba(200,241,53,0.2);
+    color: #c8f135cc;
+  }
+  .stack-frame.redo-frame {
+    background: rgba(95,200,255,0.05);
+    border-color: rgba(95,200,255,0.2);
+    color: #5fc8ffcc;
+  }
+  .stack-frame.top-frame {
+    border-width: 2px;
+    font-weight: 500;
+  }
+  .stack-frame .tag {
+    font-size: 0.65rem;
+    padding: 1px 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .tag-add  { background: rgba(200,241,53,0.15); color: var(--add); }
+  .tag-del  { background: rgba(255,95,63,0.15); color: var(--del); }
+  .tag-edit { background: rgba(95,200,255,0.15); color: var(--edit); }
+  .tag-done { background: rgba(255,200,50,0.15); color: #ffc832; }
+
+  .stack-empty {
+    color: var(--muted);
+    font-size: 0.72rem;
+    padding: 10px 0;
+    letter-spacing: 1px;
+    text-align: center;
+  }
+
+  .stack-pointer {
+    font-size: 0.68rem;
+    color: var(--accent);
+    letter-spacing: 1px;
+    padding: 4px 0 0;
+    text-align: right;
+  }
+
+  /* Toast */
+  #toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    background: #1e1e1e;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 22px;
+    border-radius: 40px;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    z-index: 100;
+    white-space: nowrap;
+  }
+  #toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Inline edit */
+  .task-edit-input {
+    flex: 1;
+    background: #0d0d0d;
+    border: 1px solid var(--accent);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.88rem;
+    padding: 3px 8px;
+    border-radius: 5px;
+    outline: none;
+  }
+
+  @media (max-width: 700px) {
+    .container { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>TASK MANAGER</h1>
+  <p>Undo / Redo · Stack Data Structure Demo</p>
+</header>
+
+<div class="container">
+
+  <!-- LEFT: Task panel -->
+  <div class="panel">
+    <div class="panel-header">
+      Tasks <span id="task-count">0 items</span>
+    </div>
+    <div class="input-row">
+      <input type="text" id="task-input" placeholder="New task description..." />
+      <button class="btn" onclick="addTask()">+ Add</button>
+    </div>
+    <div class="task-list" id="task-list">
+      <div class="empty-state">No tasks yet. Add one above ↑</div>
+    </div>
+    <div class="toolbar">
+      <button class="btn ghost" id="undo-btn" onclick="undo()" disabled>↩ Undo</button>
+      <button class="btn ghost" id="redo-btn" onclick="redo()" disabled>↪ Redo</button>
+      <button class="btn red" onclick="clearAll()" style="margin-left:auto">✕ Clear All</button>
+    </div>
+  </div>
+
+  <!-- RIGHT: Stack visualizer -->
+  <div class="panel">
+    <div class="panel-header">Stack Visualizer</div>
+    <div class="stacks-wrap">
+
+      <div>
+        <div class="stack-label">
+          Undo Stack (actions)
+          <em id="undo-size">0</em>
+        </div>
+        <div class="stack-viz" id="undo-stack-viz"></div>
+        <div class="stack-pointer" id="undo-pointer">← top of stack</div>
+      </div>
+
+      <div>
+        <div class="stack-label">
+          Redo Stack (undone)
+          <em id="redo-size">0</em>
+        </div>
+        <div class="stack-viz" id="redo-stack-viz"></div>
+        <div class="stack-pointer" id="redo-pointer">← top of stack</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Data structures ──────────────────────────────────────────
+let tasks = [];          // Array of {id, text, done}
+let undoStack = [];      // Stack of action objects
+let redoStack = [];      // Stack of undone actions
+let nextId = 1;
+
+// Action types: 'ADD', 'DELETE', 'EDIT', 'TOGGLE'
+// Each action stores enough to undo and redo it.
+
+// ── Core task operations (do NOT call these directly for user actions) ──
+function _addTask(id, text) {
+  tasks.push({ id, text, done: false });
+  renderTasks();
+}
+function _removeTask(id) {
+  tasks = tasks.filter(t => t.id !== id);
+  renderTasks();
+}
+function _editTask(id, newText) {
+  const t = tasks.find(t => t.id === id);
+  if (t) { t.text = newText; renderTasks(); }
+}
+function _toggleTask(id, done) {
+  const t = tasks.find(t => t.id === id);
+  if (t) { t.done = done; renderTasks(); }
+}
+
+// ── User-facing actions (push onto undo stack) ──
+function addTask() {
+  const input = document.getElementById('task-input');
+  const text = input.value.trim();
+  if (!text) { toast('⚠ Please enter a task'); return; }
+  const id = nextId++;
+  _addTask(id, text);
+  input.value = '';
+  pushUndo({ type: 'ADD', id, text });
+  flashItem(id, 'add');
+  toast('Task added');
+  updateControls();
+}
+
+function deleteTask(id) {
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  const saved = { ...t };
+  _removeTask(id);
+  pushUndo({ type: 'DELETE', id, text: saved.text, done: saved.done });
+  toast('Task deleted');
+  updateControls();
+}
+
+function editTask(id, newText, oldText) {
+  if (!newText || newText === oldText) return;
+  _editTask(id, newText);
+  pushUndo({ type: 'EDIT', id, oldText, newText });
+  flashItem(id, 'edit');
+  toast('Task edited');
+  updateControls();
+}
+
+function toggleTask(id) {
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  const oldDone = t.done;
+  _toggleTask(id, !oldDone);
+  pushUndo({ type: 'TOGGLE', id, oldDone, newDone: !oldDone });
+  updateControls();
+}
+
+function clearAll() {
+  if (!tasks.length) return;
+  const snapshot = [...tasks.map(t => ({ ...t }))];
+  tasks = [];
+  renderTasks();
+  pushUndo({ type: 'CLEAR', snapshot });
+  toast('All tasks cleared');
+  updateControls();
+}
+
+// ── Stack operations ──
+function pushUndo(action) {
+  undoStack.push(action);   // push onto undo stack
+  redoStack = [];            // any new action wipes redo stack
+  renderStacks();
+}
+
+function undo() {
+  if (!undoStack.length) return;
+  const action = undoStack.pop();   // pop from undo stack
+  applyUndo(action);
+  redoStack.push(action);            // push onto redo stack
+  toast('↩ Undone: ' + labelFor(action));
+  renderStacks();
+  updateControls();
+}
+
+function redo() {
+  if (!redoStack.length) return;
+  const action = redoStack.pop();   // pop from redo stack
+  applyRedo(action);
+  undoStack.push(action);            // push back onto undo stack
+  toast('↪ Redone: ' + labelFor(action));
+  renderStacks();
+  updateControls();
+}
+
+function applyUndo(a) {
+  if (a.type === 'ADD')    { _removeTask(a.id); }
+  if (a.type === 'DELETE') { tasks.push({ id: a.id, text: a.text, done: a.done }); renderTasks(); }
+  if (a.type === 'EDIT')   { _editTask(a.id, a.oldText); }
+  if (a.type === 'TOGGLE') { _toggleTask(a.id, a.oldDone); }
+  if (a.type === 'CLEAR')  { tasks = a.snapshot.map(t => ({ ...t })); renderTasks(); }
+}
+
+function applyRedo(a) {
+  if (a.type === 'ADD')    { _addTask(a.id, a.text); flashItem(a.id, 'add'); }
+  if (a.type === 'DELETE') { _removeTask(a.id); }
+  if (a.type === 'EDIT')   { _editTask(a.id, a.newText); flashItem(a.id, 'edit'); }
+  if (a.type === 'TOGGLE') { _toggleTask(a.id, a.newDone); }
+  if (a.type === 'CLEAR')  { tasks = []; renderTasks(); }
+}
+
+function labelFor(a) {
+  if (a.type === 'ADD')    return `Add "${truncate(a.text)}"`;
+  if (a.type === 'DELETE') return `Delete "${truncate(a.text)}"`;
+  if (a.type === 'EDIT')   return `Edit "${truncate(a.oldText)}"`;
+  if (a.type === 'TOGGLE') return `Toggle task`;
+  if (a.type === 'CLEAR')  return `Clear all`;
+  return a.type;
+}
+function truncate(s, n=20) { return s.length > n ? s.slice(0,n)+'…' : s; }
+
+// ── Rendering ──
+function renderTasks() {
+  const list = document.getElementById('task-list');
+  document.getElementById('task-count').textContent =
+    tasks.length + (tasks.length === 1 ? ' item' : ' items');
+
+  if (!tasks.length) {
+    list.innerHTML = '<div class="empty-state">No tasks. Add one or undo ↩</div>';
+    return;
+  }
+
+  list.innerHTML = tasks.map(t => `
+    <div class="task-item" id="item-${t.id}">
+      <div class="task-check ${t.done ? 'done' : ''}" onclick="toggleTask(${t.id})"></div>
+      <span class="task-text ${t.done ? 'done' : ''}" id="text-${t.id}">${escHtml(t.text)}</span>
+      <button class="task-edit-btn" onclick="startEdit(${t.id})" title="Edit">✎</button>
+      <button class="task-del-btn" onclick="deleteTask(${t.id})" title="Delete">✕</button>
+    </div>
+  `).join('');
+}
+
+function startEdit(id) {
+  const span = document.getElementById('text-' + id);
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  const oldText = t.text;
+  span.innerHTML = `<input class="task-edit-input" id="edit-input-${id}" value="${escHtml(oldText)}" />`;
+  const inp = document.getElementById('edit-input-' + id);
+  inp.focus(); inp.select();
+  inp.addEventListener('blur', () => {
+    const newText = inp.value.trim();
+    editTask(id, newText || oldText, oldText);
+  });
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') inp.blur();
+    if (e.key === 'Escape') { inp.value = oldText; inp.blur(); }
+  });
+}
+
+function renderStacks() {
+  renderOneStack('undo', undoStack, 'undo-frame');
+  renderOneStack('redo', redoStack, 'redo-frame');
+  document.getElementById('undo-size').textContent = undoStack.length;
+  document.getElementById('redo-size').textContent = redoStack.length;
+}
+
+function renderOneStack(name, stack, cls) {
+  const viz = document.getElementById(name + '-stack-viz');
+  const ptr = document.getElementById(name + '-pointer');
+  if (!stack.length) {
+    viz.innerHTML = '<div class="stack-empty">— empty —</div>';
+    ptr.textContent = '';
+    return;
+  }
+  // Show last 6 frames max (top = last element)
+  const visible = stack.slice(-6);
+  viz.innerHTML = visible.map((a, i) => {
+    const isTop = (i === visible.length - 1);
+    const tagCls = {ADD:'tag-add', DELETE:'tag-del', EDIT:'tag-edit', TOGGLE:'tag-done', CLEAR:'tag-del'}[a.type] || 'tag-add';
+    const label = labelFor(a);
+    return `<div class="stack-frame ${cls} ${isTop ? 'top-frame' : ''}">
+      <span class="tag ${tagCls}">${a.type}</span>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(label)}</span>
+    </div>`;
+  }).join('');
+  ptr.textContent = stack.length > 6 ? `↑ +${stack.length - 6} more · top of stack` : '↑ top of stack';
+}
+
+function updateControls() {
+  document.getElementById('undo-btn').disabled = !undoStack.length;
+  document.getElementById('redo-btn').disabled = !redoStack.length;
+}
+
+function flashItem(id, type) {
+  setTimeout(() => {
+    const el = document.getElementById('item-' + id);
+    if (el) {
+      el.classList.remove('flash-add', 'flash-del');
+      void el.offsetWidth;
+      el.classList.add(type === 'add' ? 'flash-add' : type === 'del' ? 'flash-del' : 'flash-add');
+    }
+  }, 10);
+}
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
+});
+document.getElementById('task-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addTask();
+});
+
+// Seed with sample tasks
+(function seed() {
+  ['Buy groceries', 'Read chapter 3', 'Fix login bug'].forEach(t => {
+    const id = nextId++;
+    _addTask(id, t);
+    undoStack.push({ type: 'ADD', id, text: t });
+  });
+  renderStacks();
+  updateControls();
+})();
+</script>
+</body>
+</html>
