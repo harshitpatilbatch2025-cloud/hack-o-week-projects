@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeForge Academy — Web Dev Bootcamp</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+
+/* ══════════════════════════════════
+   RESET & VARIABLES
+══════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --black:   #060810;
+  --dark:    #0C0F1E;
+  --card:    #111527;
+  --border:  rgba(255,255,255,0.07);
+  --lime:    #C8FF00;
+  --lime2:   #A8E000;
+  --blue:    #3B82F6;
+  --cyan:    #06B6D4;
+  --white:   #FFFFFF;
+  --grey:    #8896B3;
+  --light:   #D4DFFF;
+  --radius:  16px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* Custom cursor */
+.cursor {
+  width: 12px; height: 12px;
+  background: var(--lime);
+  border-radius: 50%;
+  position: fixed;
+  top: 0; left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: transform 0.15s ease;
+  mix-blend-mode: difference;
+}
+
+/* ══════════════════════════════════
+   NOISE OVERLAY
+══════════════════════════════════ */
+body::before {
+  content:'';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.5;
+}
+
+/* ══════════════════════════════════
+   NAV
+══════════════════════════════════ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 6%;
+  background: rgba(6,8,16,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  animation: slideDown 0.6s ease both;
+}
+
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  letter-spacing: 0.08em;
+  color: var(--white);
+  text-decoration: none;
+}
+
+.nav-logo span { color: var(--lime); }
+
+.nav-links {
+  display: flex; gap: 36px; list-style: none;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--grey);
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  transition: color 0.25s;
+}
+
+.nav-links a:hover { color: var(--white); }
+
+.nav-cta {
+  background: var(--lime);
+  color: var(--black) !important;
+  font-weight: 600 !important;
+  padding: 10px 22px;
+  border-radius: 8px;
+  color: var(--black);
+  transition: background 0.25s, transform 0.2s !important;
+}
+
+.nav-cta:hover { background: var(--lime2); transform: translateY(-2px); }
+
+.hamburger {
+  display: none;
+  flex-direction: column; gap: 5px;
+  cursor: pointer; background: none; border: none;
+}
+.hamburger span {
+  display: block; width: 24px; height: 2px;
+  background: var(--white); border-radius: 2px;
+  transition: all 0.3s;
+}
+
+/* ══════════════════════════════════
+   HERO
+══════════════════════════════════ */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  justify-content: center;
+  padding: 120px 6% 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glowing blobs */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  animation: pulse 8s ease-in-out infinite;
+}
+.blob-1 { width:500px; height:500px; background:rgba(200,255,0,0.07); top:-100px; right:-100px; }
+.blob-2 { width:400px; height:400px; background:rgba(59,130,246,0.09); bottom:-60px; left:-80px; animation-delay:3s; }
+.blob-3 { width:300px; height:300px; background:rgba(6,182,212,0.07); top:40%; right:20%; animation-delay:5s; }
+
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(200,255,0,0.08);
+  border: 1px solid rgba(200,255,0,0.25);
+  border-radius: 100px;
+  padding: 6px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--lime);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  width: fit-content;
+  animation: fadeUp 0.7s ease 0.1s both;
+}
+
+.hero-tag::before {
+  content:'';
+  width:7px; height:7px;
+  background: var(--lime);
+  border-radius: 50%;
+  animation: blink 1.5s infinite;
+}
+
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(64px, 10vw, 140px);
+  line-height: 0.95;
+  letter-spacing: 0.01em;
+  margin-bottom: 8px;
+  animation: fadeUp 0.7s ease 0.2s both;
+}
+
+.hero-title .accent { color: var(--lime); }
+
+.hero-title-sub {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(40px, 6vw, 88px);
+  line-height: 0.95;
+  color: var(--grey);
+  letter-spacing: 0.01em;
+  margin-bottom: 32px;
+  animation: fadeUp 0.7s ease 0.3s both;
+}
+
+.hero-desc {
+  max-width: 520px;
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--light);
+  margin-bottom: 44px;
+  animation: fadeUp 0.7s ease 0.4s both;
+}
+
+.hero-btns {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  animation: fadeUp 0.7s ease 0.5s both;
+}
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--lime);
+  color: var(--black);
+  font-weight: 600;
+  font-size: 15px;
+  padding: 16px 32px;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: transform 0.25s, box-shadow 0.25s;
+  box-shadow: 0 0 0 0 rgba(200,255,0,0.4);
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(200,255,0,0.25);
+}
+
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: transparent;
+  color: var(--white);
+  font-size: 15px;
+  padding: 16px 32px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  transition: border-color 0.25s, background 0.25s;
+}
+
+.btn-secondary:hover {
+  border-color: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.04);
+}
+
+/* Hero stats */
+.hero-stats {
+  display: flex; gap: 48px; flex-wrap: wrap;
+  margin-top: 64px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+  animation: fadeUp 0.7s ease 0.6s both;
+}
+
+.stat-item {}
+.stat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 44px;
+  line-height: 1;
+  color: var(--lime);
+}
+.stat-lbl { font-size: 13px; color: var(--grey); margin-top: 4px; letter-spacing: 0.05em; }
+
+/* Code window floating */
+.hero-code {
+  position: absolute;
+  right: 6%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: min(420px, 42vw);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+  animation: fadeLeft 0.9s ease 0.4s both;
+}
+
+.code-topbar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--border);
+}
+
+.dot { width:11px; height:11px; border-radius:50%; }
+.dot-r { background:#FF5F57; }
+.dot-y { background:#FFBD2E; }
+.dot-g { background:#28CA41; }
+
+.code-filename {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--grey);
+  margin-left: auto;
+}
+
+.code-body {
+  padding: 22px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.9;
+}
+
+.kw  { color: #C792EA; }
+.fn  { color: #82AAFF; }
+.str { color: #C3E88D; }
+.tag { color: #F07178; }
+.attr{ color: #FFCB6B; }
+.cm  { color: #546E7A; font-style: italic; }
+.num { color: var(--cyan); }
+
+/* Typing cursor */
+.type-cursor {
+  display: inline-block;
+  width: 2px; height: 14px;
+  background: var(--lime);
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: blink 1s infinite;
+}
+
+/* ══════════════════════════════════
+   MARQUEE STRIP
+══════════════════════════════════ */
+.marquee-wrap {
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 18px 0;
+  background: rgba(200,255,0,0.03);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 22s linear infinite;
+}
+
+.marquee-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 40px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--grey);
+  white-space: nowrap;
+}
+
+.marquee-dot { color: var(--lime); font-size: 18px; }
+
+/* ══════════════════════════════════
+   SECTION COMMON
+══════════════════════════════════ */
+section { padding: 100px 6%; position: relative; z-index: 1; }
+
+.section-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--lime);
+  margin-bottom: 14px;
+}
+
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(38px, 5vw, 64px);
+  line-height: 1.05;
+  margin-bottom: 16px;
+}
+
+.section-desc {
+  font-size: 16px;
+  color: var(--grey);
+  line-height: 1.7;
+  max-width: 520px;
+}
+
+/* ══════════════════════════════════
+   CURRICULUM
+══════════════════════════════════ */
+#curriculum { background: var(--dark); }
+
+.curriculum-header {
+  display: flex; justify-content: space-between;
+  align-items: flex-end; flex-wrap: wrap; gap: 24px;
+  margin-bottom: 56px;
+}
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.module-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+.module-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--lime), var(--cyan));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+}
+
+.module-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(200,255,0,0.2);
+  box-shadow: 0 20px 48px rgba(0,0,0,0.4);
+}
+
+.module-card:hover::before { transform: scaleX(1); }
+
+.module-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--lime);
+  letter-spacing: 0.2em;
+  margin-bottom: 16px;
+}
+
+.module-icon {
+  font-size: 30px;
+  margin-bottom: 14px;
+  display: block;
+}
+
+.module-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+.module-desc {
+  font-size: 13px;
+  color: var(--grey);
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.module-tags {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+
+.tag-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.05);
+  color: var(--grey);
+  border: 1px solid var(--border);
+}
+
+/* ══════════════════════════════════
+   FEATURES / WHY US
+══════════════════════════════════ */
+#why {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.why-left {}
+
+.why-right {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.feature-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 22px;
+  transition: transform 0.3s, border-color 0.3s;
+}
+
+.feature-box:hover {
+  transform: translateY(-4px);
+  border-color: rgba(200,255,0,0.2);
+}
+
+.feature-icon { font-size: 28px; margin-bottom: 14px; }
+
+.feature-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 19px;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+.feature-desc { font-size: 13px; color: var(--grey); line-height: 1.6; }
+
+/* ══════════════════════════════════
+   INSTRUCTORS
+══════════════════════════════════ */
+#instructors { background: var(--dark); }
+
+.instructors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 24px;
+  margin-top: 52px;
+}
+
+.instructor-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  text-align: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.instructor-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 56px rgba(0,0,0,0.45);
+}
+
+.avatar {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  margin: 0 auto 18px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px;
+  border: 2px solid var(--border);
+}
+
+.av1 { background: linear-gradient(135deg,#1A1F3A,#2A3060); }
+.av2 { background: linear-gradient(135deg,#1A2A1A,#204020); }
+.av3 { background: linear-gradient(135deg,#2A1A1A,#502020); }
+
+.instructor-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.instructor-role { font-size: 13px; color: var(--lime); margin-bottom: 12px; }
+.instructor-bio  { font-size: 13px; color: var(--grey); line-height: 1.6; margin-bottom: 18px; }
+
+.instructor-badges {
+  display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+}
+
+.badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: rgba(200,255,0,0.08);
+  border: 1px solid rgba(200,255,0,0.2);
+  color: var(--lime);
+}
+
+/* ══════════════════════════════════
+   TESTIMONIALS
+══════════════════════════════════ */
+#testimonials {}
+
+.testimonials-header { margin-bottom: 52px; }
+
+.testi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.testi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 30px 26px;
+  position: relative;
+  transition: border-color 0.3s;
+}
+
+.testi-card:hover { border-color: rgba(200,255,0,0.2); }
+
+.quote-mark {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 72px;
+  line-height: 0.7;
+  color: var(--lime);
+  opacity: 0.3;
+  margin-bottom: 12px;
+}
+
+.testi-text {
+  font-size: 15px;
+  font-style: italic;
+  color: var(--light);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+.testi-author {
+  display: flex; align-items: center; gap: 14px;
+}
+
+.testi-avatar {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  background: var(--dark);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.testi-name { font-weight: 600; font-size: 14px; }
+.testi-role { font-size: 12px; color: var(--grey); }
+
+.stars { color: var(--lime); font-size: 13px; margin-bottom: 14px; letter-spacing: 2px; }
+
+/* ══════════════════════════════════
+   PRICING
+══════════════════════════════════ */
+#pricing { background: var(--dark); }
+
+.pricing-header { margin-bottom: 52px; }
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.pricing-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 36px 28px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.pricing-card.featured {
+  border-color: var(--lime);
+  position: relative;
+  transform: scale(1.03);
+  box-shadow: 0 0 60px rgba(200,255,0,0.1);
+}
+
+.pricing-card:hover { transform: translateY(-6px); }
+.pricing-card.featured:hover { transform: scale(1.03) translateY(-6px); }
+
+.popular-badge {
+  position: absolute;
+  top: -13px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--lime);
+  color: var(--black);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 5px 18px;
+  border-radius: 100px;
+}
+
+.plan-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+.plan-desc { font-size: 13px; color: var(--grey); margin-bottom: 28px; }
+
+.plan-price {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 56px;
+  line-height: 1;
+  color: var(--white);
+  margin-bottom: 4px;
+}
+
+.plan-price span { font-size: 22px; color: var(--grey); }
+.plan-duration { font-size: 13px; color: var(--grey); margin-bottom: 28px; }
+
+.plan-features { list-style: none; margin-bottom: 32px; }
+
+.plan-features li {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--light);
+}
+
+.plan-features li:last-child { border-bottom: none; }
+
+.check { color: var(--lime); font-size: 16px; }
+
+.plan-btn {
+  display: block;
+  text-align: center;
+  padding: 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transition: all 0.25s;
+}
+
+.plan-btn-outline {
+  border: 1px solid var(--border);
+  color: var(--white);
+}
+
+.plan-btn-outline:hover { border-color: var(--lime); color: var(--lime); }
+
+.plan-btn-filled {
+  background: var(--lime);
+  color: var(--black);
+}
+
+.plan-btn-filled:hover { background: var(--lime2); transform: translateY(-2px); }
+
+/* ══════════════════════════════════
+   FAQ
+══════════════════════════════════ */
+#faq {}
+
+.faq-header { margin-bottom: 52px; }
+
+.faq-list {
+  max-width: 720px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+.faq-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.25s;
+}
+
+.faq-item:hover { border-color: rgba(200,255,0,0.2); }
+
+.faq-q {
+  width: 100%; background: none; border: none;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 22px 24px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  color: var(--white);
+  text-align: left;
+  cursor: pointer;
+  font-weight: 400;
+}
+
+.faq-arrow {
+  font-size: 20px;
+  color: var(--lime);
+  transition: transform 0.3s;
+  flex-shrink: 0;
+}
+
+.faq-item.open .faq-arrow { transform: rotate(45deg); }
+
+.faq-a {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s;
+  font-size: 14px;
+  color: var(--grey);
+  line-height: 1.7;
+  padding: 0 24px;
+}
+
+.faq-item.open .faq-a {
+  max-height: 200px;
+  padding: 0 24px 22px;
+}
+
+/* ══════════════════════════════════
+   CTA BANNER
+══════════════════════════════════ */
+.cta-banner {
+  margin: 0 6% 80px;
+  background: linear-gradient(135deg, #0F1A00 0%, #1A2800 100%);
+  border: 1px solid rgba(200,255,0,0.2);
+  border-radius: 24px;
+  padding: 72px 6%;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.cta-banner::before {
+  content:'';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(200,255,0,0.08) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  pointer-events: none;
+}
+
+.cta-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(40px, 6vw, 80px);
+  line-height: 1;
+  margin-bottom: 16px;
+}
+
+.cta-title span { color: var(--lime); }
+.cta-sub { font-size: 16px; color: var(--grey); margin-bottom: 36px; }
+
+.cta-form {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  max-width: 480px; margin: 0 auto;
+}
+
+.cta-input {
+  flex: 1;
+  min-width: 200px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--white);
+  outline: none;
+  transition: border-color 0.25s;
+}
+
+.cta-input::placeholder { color: var(--grey); }
+.cta-input:focus { border-color: var(--lime); }
+
+.cta-submit {
+  background: var(--lime);
+  color: var(--black);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.25s, transform 0.2s;
+}
+
+.cta-submit:hover { background: var(--lime2); transform: translateY(-2px); }
+
+/* ══════════════════════════════════
+   FOOTER
+══════════════════════════════════ */
+footer {
+  padding: 40px 6%;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  color: var(--white);
+  text-decoration: none;
+}
+
+.footer-logo span { color: var(--lime); }
+
+.footer-links {
+  display: flex; gap: 28px; list-style: none;
+}
+
+.footer-links a {
+  text-decoration: none;
+  font-size: 13px;
+  color: var(--grey);
+  transition: color 0.2s;
+}
+
+.footer-links a:hover { color: var(--white); }
+
+.footer-copy {
+  font-size: 12px;
+  color: var(--grey);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ══════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════ */
+@keyframes slideDown {
+  from { opacity:0; transform:translateY(-20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(32px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+@keyframes fadeLeft {
+  from { opacity:0; transform:translateX(40px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+
+@keyframes pulse {
+  0%,100% { transform: scale(1); }
+  50%      { transform: scale(1.1); }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes blink {
+  0%,100% { opacity:1; }
+  50%      { opacity:0; }
+}
+
+/* ══════════════════════════════════
+   SCROLL REVEAL
+══════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ══════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════ */
+@media (max-width: 1024px) {
+  .hero-code { display: none; }
+  .hero-title { font-size: clamp(56px, 12vw, 100px); }
+  #why { grid-template-columns: 1fr; gap: 48px; }
+}
+
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .nav-links.open {
+    display: flex; flex-direction: column;
+    position: fixed; top: 65px; left: 0; right: 0;
+    background: rgba(6,8,16,0.97);
+    padding: 24px 6%;
+    border-bottom: 1px solid var(--border);
+    z-index: 99;
+  }
+  .hamburger { display: flex; }
+  .hero { padding: 110px 6% 60px; }
+  .hero-stats { gap: 28px; }
+  .why-right { grid-template-columns: 1fr; }
+  .pricing-card.featured { transform: scale(1); }
+  footer { flex-direction: column; text-align: center; }
+  .cta-banner { margin: 0 4% 60px; padding: 52px 6%; }
+  section { padding: 72px 6%; }
+}
+
+@media (max-width: 480px) {
+  .hero-title { font-size: 52px; }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .testi-grid  { grid-template-columns: 1fr; }
+  .modules-grid{ grid-template-columns: 1fr; }
+  .instructors-grid { grid-template-columns: 1fr 1fr; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div class="cursor" id="cursor"></div>
+
+<!-- ════════════ NAV ════════════ -->
+<nav>
+  <a href="#" class="nav-logo">Code<span>Forge</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#curriculum">Curriculum</a></li>
+    <li><a href="#why">Why Us</a></li>
+    <li><a href="#instructors">Instructors</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="#cta" class="nav-cta">Enroll Now</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ════════════ HERO ════════════ -->
+<section class="hero">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="hero-tag">Applications Open — Batch 2026</div>
+
+  <h1 class="hero-title">Build the <span class="accent">Web.</span></h1>
+  <h2 class="hero-title-sub">Land the Job.</h2>
+
+  <p class="hero-desc">
+    An intensive 16-week bootcamp that takes you from zero to full-stack developer.
+    Real projects, real mentors, real career outcomes.
+  </p>
+
+  <div class="hero-btns">
+    <a href="#cta" class="btn-primary">⚡ Apply Now — Free</a>
+    <a href="#curriculum" class="btn-secondary">View Curriculum →</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num">94%</div>
+      <div class="stat-lbl">Job Placement Rate</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">1,200+</div>
+      <div class="stat-lbl">Graduates Hired</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">16</div>
+      <div class="stat-lbl">Weeks Intensive</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">₹8LPA</div>
+      <div class="stat-lbl">Avg. Starting Salary</div>
+    </div>
+  </div>
+
+  <!-- Floating code window -->
+  <div class="hero-code">
+    <div class="code-topbar">
+      <span class="dot dot-r"></span>
+      <span class="dot dot-y"></span>
+      <span class="dot dot-g"></span>
+      <span class="code-filename">app.js</span>
+    </div>
+    <div class="code-body">
+      <div><span class="cm">// Your journey starts here</span></div>
+      <div><span class="kw">const</span> <span class="fn">developer</span> = {</div>
+      <div>&nbsp;&nbsp;name: <span class="str">"You"</span>,</div>
+      <div>&nbsp;&nbsp;skills: [<span class="str">"HTML"</span>, <span class="str">"CSS"</span>,</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="str">"JavaScript"</span>, <span class="str">"React"</span>],</div>
+      <div>&nbsp;&nbsp;salary: <span class="num">800000</span>,</div>
+      <div>&nbsp;&nbsp;ready: <span class="kw">true</span></div>
+      <div>};</div>
+      <br>
+      <div><span class="fn">launchCareer</span>(developer);<span class="type-cursor"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ MARQUEE ════════════ -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <div class="marquee-item"><span class="marquee-dot">✦</span> HTML & CSS</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> JavaScript</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> React.js</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> Node.js</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> MongoDB</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> REST APIs</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> Git & GitHub</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> TypeScript</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> Tailwind CSS</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> DSA</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> System Design</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> Deployment</div>
+    <!-- duplicate for seamless loop -->
+    <div class="marquee-item"><span class="marquee-dot">✦</span> HTML & CSS</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> JavaScript</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> React.js</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> Node.js</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> MongoDB</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> REST APIs</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> Git & GitHub</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> TypeScript</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> Tailwind CSS</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> DSA</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> System Design</div>
+    <div class="marquee-item"><span class="marquee-dot">✦</span> Deployment</div>
+  </div>
+</div>
+
+<!-- ════════════ CURRICULUM ════════════ -->
+<section id="curriculum">
+  <div class="curriculum-header">
+    <div>
+      <p class="section-tag">// 01 — Curriculum</p>
+      <h2 class="section-title">What You'll<br>Master</h2>
+    </div>
+    <p class="section-desc">A carefully structured path from foundations to production-ready full-stack development.</p>
+  </div>
+
+  <div class="modules-grid">
+    <div class="module-card reveal">
+      <div class="module-num">MODULE 01</div>
+      <span class="module-icon">🏗️</span>
+      <div class="module-title">Web Foundations</div>
+      <div class="module-desc">Master HTML5 semantics, CSS3 layouts, Flexbox, Grid, and responsive design principles.</div>
+      <div class="module-tags">
+        <span class="tag-pill">HTML5</span>
+        <span class="tag-pill">CSS3</span>
+        <span class="tag-pill">Flexbox</span>
+        <span class="tag-pill">Grid</span>
+      </div>
+    </div>
+
+    <div class="module-card reveal">
+      <div class="module-num">MODULE 02</div>
+      <span class="module-icon">⚡</span>
+      <div class="module-title">JavaScript Core</div>
+      <div class="module-desc">Deep dive into ES6+, DOM manipulation, async programming, and browser APIs.</div>
+      <div class="module-tags">
+        <span class="tag-pill">ES6+</span>
+        <span class="tag-pill">DOM</span>
+        <span class="tag-pill">Async/Await</span>
+        <span class="tag-pill">Fetch API</span>
+      </div>
+    </div>
+
+    <div class="module-card reveal">
+      <div class="module-num">MODULE 03</div>
+      <span class="module-icon">⚛️</span>
+      <div class="module-title">React & Frontend</div>
+      <div class="module-desc">Build dynamic UIs with React, state management, hooks, routing and component architecture.</div>
+      <div class="module-tags">
+        <span class="tag-pill">React</span>
+        <span class="tag-pill">Redux</span>
+        <span class="tag-pill">React Router</span>
+        <span class="tag-pill">Hooks</span>
+      </div>
+    </div>
+
+    <div class="module-card reveal">
+      <div class="module-num">MODULE 04</div>
+      <span class="module-icon">🖥️</span>
+      <div class="module-title">Backend with Node</div>
+      <div class="module-desc">Build RESTful APIs, handle authentication, middleware and server-side logic with Node & Express.</div>
+      <div class="module-tags">
+        <span class="tag-pill">Node.js</span>
+        <span class="tag-pill">Express</span>
+        <span class="tag-pill">JWT</span>
+        <span class="tag-pill">REST API</span>
+      </div>
+    </div>
+
+    <div class="module-card reveal">
+      <div class="module-num">MODULE 05</div>
+      <span class="module-icon">🗄️</span>
+      <div class="module-title">Databases</div>
+      <div class="module-desc">Design schemas, query databases and integrate MongoDB and SQL into full-stack applications.</div>
+      <div class="module-tags">
+        <span class="tag-pill">MongoDB</span>
+        <span class="tag-pill">MySQL</span>
+        <span class="tag-pill">Mongoose</span>
+        <span class="tag-pill">SQL</span>
+      </div>
+    </div>
+
+    <div class="module-card reveal">
+      <div class="module-num">MODULE 06</div>
+      <span class="module-icon">🚀</span>
+      <div class="module-title">Capstone & Career</div>
+      <div class="module-desc">Build a production app, deploy on AWS/Vercel, prepare your portfolio and crack interviews.</div>
+      <div class="module-tags">
+        <span class="tag-pill">Deployment</span>
+        <span class="tag-pill">AWS</span>
+        <span class="tag-pill">Portfolio</span>
+        <span class="tag-pill">DSA</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ WHY US ════════════ -->
+<section id="why">
+  <div class="why-left reveal">
+    <p class="section-tag">// 02 — Why CodeForge</p>
+    <h2 class="section-title">Built for<br>Real Outcomes</h2>
+    <p class="section-desc">We don't teach theory. We build engineers who ship products and get hired at top companies.</p>
+    <br><br>
+    <a href="#cta" class="btn-primary">Start Your Journey →</a>
+  </div>
+  <div class="why-right">
+    <div class="feature-box reveal">
+      <div class="feature-icon">🎯</div>
+      <div class="feature-title">Project-Based Learning</div>
+      <div class="feature-desc">Every week you build something real. 20+ projects across the entire curriculum.</div>
+    </div>
+    <div class="feature-box reveal">
+      <div class="feature-icon">🧑‍💼</div>
+      <div class="feature-title">1-on-1 Mentorship</div>
+      <div class="feature-desc">Dedicated mentor sessions twice a week — never get stuck alone.</div>
+    </div>
+    <div class="feature-box reveal">
+      <div class="feature-icon">💼</div>
+      <div class="feature-title">Career Support</div>
+      <div class="feature-desc">Resume reviews, mock interviews and direct referrals to 200+ hiring partners.</div>
+    </div>
+    <div class="feature-box reveal">
+      <div class="feature-icon">⏱️</div>
+      <div class="feature-title">Flexible Schedule</div>
+      <div class="feature-desc">Full-time and part-time tracks — learn while managing your life.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ INSTRUCTORS ════════════ -->
+<section id="instructors">
+  <p class="section-tag">// 03 — Instructors</p>
+  <h2 class="section-title">Learn from the Best</h2>
+  <p class="section-desc">Industry veterans with years at top tech companies, now dedicated to your growth.</p>
+
+  <div class="instructors-grid">
+    <div class="instructor-card reveal">
+      <div class="avatar av1">👨‍💻</div>
+      <div class="instructor-name">Arjun Mehta</div>
+      <div class="instructor-role">Lead Instructor — Full Stack</div>
+      <div class="instructor-bio">Ex-Flipkart engineer with 9 years building large-scale web systems. React & Node specialist.</div>
+      <div class="instructor-badges">
+        <span class="badge">React</span>
+        <span class="badge">Node</span>
+        <span class="badge">AWS</span>
+      </div>
+    </div>
+
+    <div class="instructor-card reveal">
+      <div class="avatar av2">👩‍💻</div>
+      <div class="instructor-name">Priya Sharma</div>
+      <div class="instructor-role">Frontend Lead</div>
+      <div class="instructor-bio">UI Engineering lead at Razorpay for 6 years. Designed component systems used by millions.</div>
+      <div class="instructor-badges">
+        <span class="badge">CSS</span>
+        <span class="badge">TypeScript</span>
+        <span class="badge">Design</span>
+      </div>
+    </div>
+
+    <div class="instructor-card reveal">
+      <div class="avatar av3">🧑‍💻</div>
+      <div class="instructor-name">Ravi Nair</div>
+      <div class="instructor-role">Backend & DevOps</div>
+      <div class="instructor-bio">Backend architect who has worked at Infosys and two YC-backed startups. DevOps evangelist.</div>
+      <div class="instructor-badges">
+        <span class="badge">Node</span>
+        <span class="badge">MongoDB</span>
+        <span class="badge">Docker</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ TESTIMONIALS ════════════ -->
+<section id="testimonials">
+  <div class="testimonials-header">
+    <p class="section-tag">// 04 — Testimonials</p>
+    <h2 class="section-title">Graduates Speaking</h2>
+  </div>
+
+  <div class="testi-grid">
+    <div class="testi-card reveal">
+      <div class="stars">★★★★★</div>
+      <div class="quote-mark">"</div>
+      <p class="testi-text">CodeForge completely changed my career trajectory. I went from a BPO job to a frontend developer role at a Series B startup in just 4 months.</p>
+      <div class="testi-author">
+        <div class="testi-avatar">😊</div>
+        <div>
+          <div class="testi-name">Sneha Kapoor</div>
+          <div class="testi-role">Frontend Dev @ Groww · Batch 2025</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="testi-card reveal">
+      <div class="stars">★★★★★</div>
+      <div class="quote-mark">"</div>
+      <p class="testi-text">The project-based approach is what makes this different. By week 8 I had three full-stack projects on my portfolio. Got placed before graduation.</p>
+      <div class="testi-author">
+        <div class="testi-avatar">🙂</div>
+        <div>
+          <div class="testi-name">Karan Malhotra</div>
+          <div class="testi-role">Full Stack Dev @ Swiggy · Batch 2025</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="testi-card reveal">
+      <div class="stars">★★★★★</div>
+      <div class="quote-mark">"</div>
+      <p class="testi-text">The mentors genuinely care. Arjun sir stayed on a call with me until midnight before my Google interview. I cleared it. Enough said.</p>
+      <div class="testi-author">
+        <div class="testi-avatar">😄</div>
+        <div>
+          <div class="testi-name">Ananya Reddy</div>
+          <div class="testi-role">SDE-1 @ Google · Batch 2024</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ PRICING ════════════ -->
+<section id="pricing">
+  <div class="pricing-header">
+    <p class="section-tag">// 05 — Pricing</p>
+    <h2 class="section-title">Simple, Transparent<br>Pricing</h2>
+    <p class="section-desc">No hidden fees. Pay once, learn for life. EMI options available.</p>
+  </div>
+
+  <div class="pricing-grid">
+    <div class="pricing-card reveal">
+      <div class="plan-name">Part-Time</div>
+      <div class="plan-desc">For working professionals — evenings & weekends.</div>
+      <div class="plan-price"><span>₹</span>49,999</div>
+      <div class="plan-duration">24 weeks · 15 hrs/week</div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> Full Curriculum Access</li>
+        <li><span class="check">✓</span> Weekly Mentor Sessions</li>
+        <li><span class="check">✓</span> Community Access</li>
+        <li><span class="check">✓</span> Career Support</li>
+        <li><span class="check">✓</span> Certificate</li>
+      </ul>
+      <a href="#cta" class="plan-btn plan-btn-outline">Get Started</a>
+    </div>
+
+    <div class="pricing-card featured reveal">
+      <div class="popular-badge">Most Popular</div>
+      <div class="plan-name">Full-Time</div>
+      <div class="plan-desc">Fastest path — immersive daily learning.</div>
+      <div class="plan-price"><span>₹</span>79,999</div>
+      <div class="plan-duration">16 weeks · 40 hrs/week</div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> Full Curriculum Access</li>
+        <li><span class="check">✓</span> Daily Mentor Sessions</li>
+        <li><span class="check">✓</span> 1-on-1 Career Coaching</li>
+        <li><span class="check">✓</span> Job Guarantee*</li>
+        <li><span class="check">✓</span> Alumni Network</li>
+      </ul>
+      <a href="#cta" class="plan-btn plan-btn-filled">Enroll Now</a>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ FAQ ════════════ -->
+<section id="faq">
+  <div class="faq-header">
+    <p class="section-tag">// 06 — FAQ</p>
+    <h2 class="section-title">Common Questions</h2>
+  </div>
+
+  <div class="faq-list">
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Do I need prior coding experience?
+        <span class="faq-arrow">+</span>
+      </button>
+      <div class="faq-a">No prior experience is required. We start from the absolute basics of HTML and CSS and progressively build up to advanced full-stack development. All you need is a laptop and dedication.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        What is the job guarantee?
+        <span class="faq-arrow">+</span>
+      </button>
+      <div class="faq-a">If you complete the full-time program and don't land a job within 6 months of graduation, we refund 100% of your tuition. Terms and conditions apply — ask our admissions team for the full details.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Are EMI options available?
+        <span class="faq-arrow">+</span>
+      </button>
+      <div class="faq-a">Yes! We offer no-cost EMI plans starting from ₹4,999/month through our banking partners. You can also opt for our Income Share Agreement (ISA) — pay only after you get hired.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Is the bootcamp online or offline?
+        <span class="faq-arrow">+</span>
+      </button>
+      <div class="faq-a">We offer both online (live classes) and offline (Pune campus) options. Live sessions are recorded and available for replay. Offline students get access to our coding lab 24/7.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        What kind of projects will I build?
+        <span class="faq-arrow">+</span>
+      </button>
+      <div class="faq-a">You'll build 20+ projects including a portfolio site, a full e-commerce platform, a real-time chat application, a REST API with authentication, and a final capstone project of your choice that you fully own and deploy.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ CTA ════════════ -->
+<div class="cta-banner" id="cta">
+  <h2 class="cta-title">Ready to <span>Code</span><br>Your Future?</h2>
+  <p class="cta-sub">Join 1,200+ graduates. Next batch starts April 14, 2026.</p>
+  <div class="cta-form">
+    <input type="email" class="cta-input" placeholder="Enter your email address">
+    <button class="cta-submit">Apply Free →</button>
+  </div>
+</div>
+
+<!-- ════════════ FOOTER ════════════ -->
+<footer>
+  <a href="#" class="footer-logo">Code<span>Forge</span> Academy</a>
+  <ul class="footer-links">
+    <li><a href="#curriculum">Curriculum</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="mailto:hello@codeforge.in">Contact</a></li>
+  </ul>
+  <div class="footer-copy">© 2026 CodeForge Academy</div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX - 6 + 'px';
+    cursor.style.top  = e.clientY - 6 + 'px';
+  });
+  document.querySelectorAll('a, button, input').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.style.transform = 'scale(2.5)');
+    el.addEventListener('mouseleave', () => cursor.style.transform = 'scale(1)');
+  });
+
+  // Hamburger
+  function toggleNav() {
+    document.getElementById('navLinks').classList.toggle('open');
+  }
+
+  // FAQ accordion
+  function toggleFaq(btn) {
+    const item = btn.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Close nav on link click (mobile)
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => {
+      document.getElementById('navLinks').classList.remove('open');
+    });
+  });
+</script>
+</body>
+</html>
