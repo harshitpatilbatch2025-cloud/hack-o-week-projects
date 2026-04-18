@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bank ATM Queue — Circular Queue Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1a1208;
+    --surface: #231a0a;
+    --surface2: #2d2210;
+    --border: #4a3518;
+    --gold: #d4a437;
+    --gold2: #f0c060;
+    --cream: #f5e6c8;
+    --muted: #7a6040;
+    --green: #4ec94e;
+    --red: #e05040;
+    --blue: #5ab0d8;
+    --text: #e8d5a8;
+    --serving: #f0c060;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(212,164,55,0.04) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(212,164,55,0.04) 40px);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    padding: 32px 16px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .header-badge {
+    display: inline-block;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-size: 0.62rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    margin-bottom: 10px;
+    border-radius: 2px;
+  }
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 900;
+    color: var(--gold2);
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  .header p {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 6px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── Layout ── */
+  .layout {
+    width: 100%;
+    max-width: 980px;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 20px;
+  }
+
+  /* ── Panel ── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .panel-head {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .panel-head .pill {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-size: 0.65rem;
+    padding: 2px 10px;
+    border-radius: 2px;
+    letter-spacing: 2px;
+  }
+  .panel-head .pill.red { border-color: var(--red); color: var(--red); }
+  .panel-head .pill.green { border-color: var(--green); color: var(--green); }
+
+  /* ── Status bar ── */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 10px 18px;
+    border-bottom: 1px solid var(--border);
+    background: #1e1508;
+    font-size: 0.68rem;
+  }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-label { color: var(--muted); letter-spacing: 2px; text-transform: uppercase; font-size: 0.58rem; }
+  .stat-value { color: var(--gold2); font-size: 0.9rem; font-weight: 600; }
+  .stat-value.red { color: var(--red); }
+  .stat-value.green { color: var(--green); }
+  .divider { width: 1px; height: 28px; background: var(--border); }
+
+  /* ── Circular Queue Visualizer ── */
+  .circle-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 32px 20px;
+    position: relative;
+  }
+  #queue-svg { overflow: visible; }
+
+  /* ── Controls ── */
+  .controls {
+    padding: 16px 18px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    padding: 9px 18px;
+    border-radius: 3px;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+  .btn-enqueue {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #1a1208;
+    font-weight: 600;
+  }
+  .btn-enqueue:hover { background: var(--gold2); }
+  .btn-dequeue {
+    background: transparent;
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+  .btn-dequeue:hover { background: rgba(90,176,216,0.1); }
+  .btn-reset {
+    background: transparent;
+    border-color: var(--muted);
+    color: var(--muted);
+    margin-left: auto;
+  }
+  .btn-reset:hover { border-color: var(--red); color: var(--red); }
+  .btn:disabled { opacity: 0.28; cursor: not-allowed; }
+  .btn:active:not(:disabled) { transform: scale(0.97); }
+
+  /* ── Queue list ── */
+  .queue-list {
+    padding: 14px 18px;
+    min-height: 220px;
+    max-height: 360px;
+    overflow-y: auto;
+  }
+  .queue-list::-webkit-scrollbar { width: 3px; }
+  .queue-list::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .queue-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 3px;
+    border: 1px solid transparent;
+    margin-bottom: 5px;
+    background: #1e1508;
+    transition: all 0.2s;
+    animation: rowIn 0.3s ease;
+  }
+  @keyframes rowIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .queue-row.serving {
+    border-color: var(--gold);
+    background: rgba(212,164,55,0.08);
+  }
+  .queue-row.waiting { border-color: transparent; }
+
+  .row-slot {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .slot-front { background: var(--gold); color: #1a1208; }
+  .slot-rear  { background: var(--blue); color: #1a1208; }
+  .slot-both  { background: var(--green); color: #1a1208; }
+  .slot-mid   { background: var(--border); color: var(--muted); }
+
+  .row-name { flex: 1; font-size: 0.82rem; color: var(--cream); }
+  .row-name.serving { color: var(--gold2); font-weight: 600; }
+  .row-time { font-size: 0.65rem; color: var(--muted); }
+  .row-tag {
+    font-size: 0.58rem;
+    padding: 2px 7px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .tag-serving { background: rgba(212,164,55,0.2); color: var(--gold2); border: 1px solid rgba(212,164,55,0.3); }
+  .tag-waiting { background: rgba(90,176,216,0.1); color: var(--blue); border: 1px solid rgba(90,176,216,0.2); }
+
+  .empty-msg {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.75rem;
+    padding: 40px 0;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── Right panel: info ── */
+  .info-section { padding: 16px; }
+  .info-title {
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(74,53,24,0.4);
+    color: var(--text);
+  }
+  .info-row span:first-child { color: var(--muted); }
+  .info-row span:last-child  { color: var(--gold2); font-weight: 500; }
+  .info-row span.na { color: var(--muted); }
+
+  /* ── Log ── */
+  .log-wrap {
+    padding: 12px 16px;
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 0.68rem;
+  }
+  .log-wrap::-webkit-scrollbar { width: 3px; }
+  .log-wrap::-webkit-scrollbar-thumb { background: var(--border); }
+  .log-entry {
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(74,53,24,0.3);
+    display: flex;
+    gap: 8px;
+    animation: rowIn 0.25s ease;
+  }
+  .log-time { color: var(--muted); flex-shrink: 0; }
+  .log-msg  { color: var(--text); }
+  .log-msg.enq { color: var(--green); }
+  .log-msg.deq { color: var(--blue); }
+  .log-msg.err { color: var(--red); }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(50px);
+    background: var(--surface2);
+    border: 1px solid var(--gold);
+    color: var(--gold2);
+    padding: 9px 22px;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 100;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.error { border-color: var(--red); color: var(--red); }
+
+  @media(max-width:680px) { .layout { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">Data Structures · Topic 17</div>
+  <h1>Bank ATM Queue</h1>
+  <p>Circular Queue · Full / Empty State Handling</p>
+</div>
+
+<div class="layout">
+
+  <!-- LEFT: main queue panel -->
+  <div>
+    <div class="panel">
+      <div class="panel-head">
+        Customer Service Queue
+        <span class="pill" id="status-pill">OPEN</span>
+      </div>
+
+      <div class="status-bar">
+        <div class="stat">
+          <div class="stat-label">Capacity</div>
+          <div class="stat-value" id="stat-cap">6</div>
+        </div>
+        <div class="divider"></div>
+        <div class="stat">
+          <div class="stat-label">In Queue</div>
+          <div class="stat-value green" id="stat-size">0</div>
+        </div>
+        <div class="divider"></div>
+        <div class="stat">
+          <div class="stat-label">Front ptr</div>
+          <div class="stat-value" id="stat-front">—</div>
+        </div>
+        <div class="divider"></div>
+        <div class="stat">
+          <div class="stat-label">Rear ptr</div>
+          <div class="stat-value" id="stat-rear">—</div>
+        </div>
+        <div class="divider"></div>
+        <div class="stat">
+          <div class="stat-label">Served</div>
+          <div class="stat-value" id="stat-served">0</div>
+        </div>
+      </div>
+
+      <!-- Circular visualizer -->
+      <div class="circle-wrap">
+        <svg id="queue-svg" width="320" height="320" viewBox="-160 -160 320 320"></svg>
+      </div>
+
+      <!-- Queue rows -->
+      <div class="queue-list" id="queue-list">
+        <div class="empty-msg">— No customers in queue —</div>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-enqueue" id="btn-enq" onclick="enqueue()">↓ Enqueue</button>
+        <button class="btn btn-dequeue" id="btn-deq" onclick="dequeue()" disabled>↑ Dequeue</button>
+        <button class="btn btn-reset" onclick="resetQueue()">↺ Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: info + log -->
+  <div style="display:flex;flex-direction:column;gap:16px;">
+
+    <div class="panel">
+      <div class="panel-head">Queue State</div>
+      <div class="info-section">
+        <div class="info-title">Circular Queue Properties</div>
+        <div class="info-row"><span>Algorithm</span><span>Circular Queue</span></div>
+        <div class="info-row"><span>Max Size (N)</span><span id="i-cap">6</span></div>
+        <div class="info-row"><span>front</span><span id="i-front">—</span></div>
+        <div class="info-row"><span>rear</span><span id="i-rear">—</span></div>
+        <div class="info-row"><span>size</span><span id="i-size">0</span></div>
+        <div class="info-row"><span>isEmpty()</span><span id="i-empty">true</span></div>
+        <div class="info-row"><span>isFull()</span><span id="i-full">false</span></div>
+        <div class="info-row"><span>next rear =</span><span id="i-next">(rear+1) % N</span></div>
+      </div>
+      <div class="info-section" style="padding-top:0">
+        <div class="info-title">Enqueue Logic</div>
+        <div style="font-size:0.66rem;color:var(--muted);line-height:1.8">
+          if isFull → reject<br>
+          rear = (rear + 1) % capacity<br>
+          queue[rear] = customer<br>
+          size++
+        </div>
+        <div class="info-title" style="margin-top:12px">Dequeue Logic</div>
+        <div style="font-size:0.66rem;color:var(--muted);line-height:1.8">
+          if isEmpty → reject<br>
+          served = queue[front]<br>
+          front = (front + 1) % capacity<br>
+          size--
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">Operation Log</div>
+      <div class="log-wrap" id="log-wrap">
+        <div class="log-entry">
+          <span class="log-time">--:--</span>
+          <span class="log-msg">System ready. Queue initialized.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Circular Queue ───────────────────────────────────────────
+const CAPACITY = 6;
+let queue = new Array(CAPACITY).fill(null);
+let front = 0;
+let rear = -1;
+let size = 0;
+let totalServed = 0;
+
+const NAMES = [
+  'Arjun Mehta','Priya Sharma','Rahul Gupta','Sneha Patel',
+  'Vikram Rao','Anjali Nair','Suresh Kumar','Deepa Iyer',
+  'Kiran Joshi','Meera Pillai','Arun Verma','Pooja Singh',
+  'Rohan Das','Lakshmi Menon','Nikhil Bhat','Sunita Yadav'
+];
+let nameIdx = 0;
+function nextName() {
+  const n = NAMES[nameIdx % NAMES.length];
+  nameIdx++;
+  return n;
+}
+
+function isEmpty() { return size === 0; }
+function isFull()  { return size === CAPACITY; }
+
+function enqueue() {
+  if (isFull()) {
+    toast('Queue is FULL — please wait for service', true);
+    log('Queue full. Customer turned away.', 'err');
+    return;
+  }
+  rear = (rear + 1) % CAPACITY;
+  const name = nextName();
+  const ts   = timeNow();
+  queue[rear] = { name, ts };
+  size++;
+  log(`Enqueued: ${name} → slot[${rear}]`, 'enq');
+  toast(`${name} joined the queue`);
+  render();
+}
+
+function dequeue() {
+  if (isEmpty()) {
+    toast('Queue is EMPTY', true);
+    log('Dequeue attempted on empty queue.', 'err');
+    return;
+  }
+  const served = queue[front];
+  queue[front] = null;
+  front = (front + 1) % CAPACITY;
+  size--;
+  totalServed++;
+  log(`Dequeued: ${served.name} (served) ← slot[${(front - 1 + CAPACITY) % CAPACITY}]`, 'deq');
+  toast(`${served.name} served ✓`);
+  render();
+}
+
+function resetQueue() {
+  queue = new Array(CAPACITY).fill(null);
+  front = 0; rear = -1; size = 0; totalServed = 0; nameIdx = 0;
+  log('Queue reset.', '');
+  toast('Queue reset');
+  render();
+}
+
+// ── Render ───────────────────────────────────────────────────
+function render() {
+  renderSVG();
+  renderList();
+  renderStats();
+}
+
+function renderStats() {
+  document.getElementById('stat-cap').textContent   = CAPACITY;
+  document.getElementById('stat-size').textContent  = size;
+  document.getElementById('stat-front').textContent = isEmpty() ? '—' : front;
+  document.getElementById('stat-rear').textContent  = isEmpty() ? '—' : rear;
+  document.getElementById('stat-served').textContent = totalServed;
+
+  document.getElementById('i-cap').textContent   = CAPACITY;
+  document.getElementById('i-front').textContent = isEmpty() ? '—' : front;
+  document.getElementById('i-rear').textContent  = isEmpty() ? '—' : rear;
+  document.getElementById('i-size').textContent  = size;
+  document.getElementById('i-empty').textContent = isEmpty() ? 'true' : 'false';
+  document.getElementById('i-full').textContent  = isFull()  ? 'true' : 'false';
+  document.getElementById('i-next').textContent  = isEmpty() ? '—' : `(${rear}+1) % ${CAPACITY} = ${(rear+1)%CAPACITY}`;
+
+  const pill = document.getElementById('status-pill');
+  if (isFull()) { pill.textContent = 'FULL'; pill.className = 'pill red'; }
+  else { pill.textContent = 'OPEN'; pill.className = 'pill green'; }
+
+  document.getElementById('stat-size').className = 'stat-value ' + (isFull() ? 'red' : 'green');
+
+  document.getElementById('btn-deq').disabled = isEmpty();
+  document.getElementById('btn-enq').disabled = isFull();
+}
+
+function renderList() {
+  const el = document.getElementById('queue-list');
+  if (isEmpty()) { el.innerHTML = '<div class="empty-msg">— No customers in queue —</div>'; return; }
+
+  let html = '';
+  for (let i = 0; i < size; i++) {
+    const idx  = (front + i) % CAPACITY;
+    const c    = queue[idx];
+    const isF  = (idx === front);
+    const isR  = (idx === rear);
+    const isFR = (isF && isR);
+    const isServing = (i === 0);
+
+    let slotCls = 'slot-mid', slotLabel = idx;
+    if (isFR) { slotCls = 'slot-both'; slotLabel = idx; }
+    else if (isF) { slotCls = 'slot-front'; }
+    else if (isR) { slotCls = 'slot-rear'; }
+
+    const tag = isServing
+      ? '<span class="row-tag tag-serving">Serving</span>'
+      : '<span class="row-tag tag-waiting">Waiting</span>';
+
+    html += `<div class="queue-row ${isServing ? 'serving' : 'waiting'}">
+      <div class="row-slot ${slotCls}" title="${isFR?'front+rear':isF?'front':isR?'rear':''}">${slotLabel}</div>
+      <span class="row-name ${isServing?'serving':''}">${c.name}</span>
+      <span class="row-time">${c.ts}</span>
+      ${tag}
+    </div>`;
+  }
+  el.innerHTML = html;
+}
+
+// ── SVG Circular Ring ────────────────────────────────────────
+function renderSVG() {
+  const svg = document.getElementById('queue-svg');
+  const R = 118, r = 34, cx = 0, cy = 0;
+  const gold = '#d4a437', blue = '#5ab0d8', green = '#4ec94e', muted = '#4a3518', dim = '#2d2210';
+
+  let out = '';
+  // Outer decorative ring
+  out += `<circle cx="0" cy="0" r="${R+14}" fill="none" stroke="${muted}" stroke-width="1" stroke-dasharray="4 6"/>`;
+
+  for (let i = 0; i < CAPACITY; i++) {
+    const angle = (i / CAPACITY) * 2 * Math.PI - Math.PI / 2;
+    const x = Math.round(R * Math.cos(angle));
+    const y = Math.round(R * Math.sin(angle));
+
+    const isF = (!isEmpty() && i === front);
+    const isR = (!isEmpty() && i === rear);
+    const occupied = queue[i] !== null;
+
+    let fill   = occupied ? 'rgba(212,164,55,0.12)' : dim;
+    let stroke = occupied ? gold : muted;
+    let sw     = 1.5;
+    if (isF && isR) { stroke = green; sw = 2.5; fill = 'rgba(78,201,78,0.15)'; }
+    else if (isF)   { stroke = gold;  sw = 2.5; fill = 'rgba(212,164,55,0.18)'; }
+    else if (isR)   { stroke = blue;  sw = 2.5; fill = 'rgba(90,176,216,0.15)'; }
+
+    // Draw spoke
+    out += `<line x1="0" y1="0" x2="${x}" y2="${y}" stroke="${muted}" stroke-width="0.5" stroke-dasharray="3 5"/>`;
+
+    // Slot circle
+    out += `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+
+    // Slot index
+    out += `<text x="${x}" y="${y - 10}" text-anchor="middle" dominant-baseline="middle"
+      font-family="IBM Plex Mono" font-size="9" fill="${muted}" letter-spacing="1">slot[${i}]</text>`;
+
+    // Customer name (short)
+    if (queue[i]) {
+      const short = queue[i].name.split(' ')[0];
+      out += `<text x="${x}" y="${y + 2}" text-anchor="middle" dominant-baseline="middle"
+        font-family="IBM Plex Mono" font-size="9.5" font-weight="600"
+        fill="${isF || isR ? '#f0c060' : '#e8d5a8'}">${short}</text>`;
+    } else {
+      out += `<text x="${x}" y="${y + 2}" text-anchor="middle" dominant-baseline="middle"
+        font-family="IBM Plex Mono" font-size="9" fill="${muted}">—</text>`;
+    }
+
+    // Pointer labels
+    if (isF && isR) {
+      out += `<text x="${x}" y="${y + 18}" text-anchor="middle"
+        font-family="IBM Plex Mono" font-size="7.5" fill="${green}" letter-spacing="1">F+R</text>`;
+    } else if (isF) {
+      out += `<text x="${x}" y="${y + 18}" text-anchor="middle"
+        font-family="IBM Plex Mono" font-size="7.5" fill="${gold}" letter-spacing="1">FRONT</text>`;
+    } else if (isR) {
+      out += `<text x="${x}" y="${y + 18}" text-anchor="middle"
+        font-family="IBM Plex Mono" font-size="7.5" fill="${blue}" letter-spacing="1">REAR</text>`;
+    }
+  }
+
+  // Center info
+  out += `<circle cx="0" cy="0" r="52" fill="${dim}" stroke="${muted}" stroke-width="1"/>`;
+  out += `<text x="0" y="-18" text-anchor="middle" font-family="Playfair Display" font-size="13" font-weight="700" fill="${gold}">${size}/${CAPACITY}</text>`;
+  out += `<text x="0" y="0" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="${muted}" letter-spacing="2">IN QUEUE</text>`;
+  const statusTxt = isEmpty() ? 'EMPTY' : isFull() ? 'FULL' : 'ACTIVE';
+  const statusCol = isEmpty() ? muted : isFull() ? '#e05040' : green;
+  out += `<text x="0" y="16" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" font-weight="600" fill="${statusCol}" letter-spacing="2">${statusTxt}</text>`;
+
+  svg.innerHTML = out;
+}
+
+// ── Log ──────────────────────────────────────────────────────
+function log(msg, type='') {
+  const wrap = document.getElementById('log-wrap');
+  const div  = document.createElement('div');
+  div.className = 'log-entry';
+  div.innerHTML = `<span class="log-time">${timeNow()}</span><span class="log-msg ${type}">${msg}</span>`;
+  wrap.prepend(div);
+  if (wrap.children.length > 30) wrap.lastChild.remove();
+}
+
+function timeNow() {
+  return new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+// ── Toast ────────────────────────────────────────────────────
+let toastT;
+function toast(msg, err=false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className   = 'show' + (err ? ' error' : '');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.className = '', 2200);
+}
+
+// Init
+render();
+</script>
+</body>
+</html>
