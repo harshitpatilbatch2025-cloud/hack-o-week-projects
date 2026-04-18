@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Score Tracker — Array & Frequency Count</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;900&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #f0f2f5;
+    --surface:   #ffffff;
+    --surface2:  #f7f8fa;
+    --border:    #e2e6ec;
+    --border2:   #cdd3dd;
+    --ink:       #0f1923;
+    --ink2:      #3a4557;
+    --muted:     #8a96a8;
+    --accent:    #1a56db;
+    --accent2:   #3b7afc;
+    --accent-bg: #eef2ff;
+    --green:     #059669;
+    --green-bg:  #ecfdf5;
+    --red:       #dc2626;
+    --red-bg:    #fef2f2;
+    --orange:    #d97706;
+    --orange-bg: #fffbeb;
+    --purple:    #7c3aed;
+    --purple-bg: #f5f3ff;
+    --shadow:    0 1px 3px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05);
+    --shadow-lg: 0 4px 24px rgba(0,0,0,0.1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 0% 0%, rgba(26,86,219,0.06) 0%, transparent 50%),
+      radial-gradient(circle at 100% 100%, rgba(124,58,237,0.05) 0%, transparent 50%);
+    color: var(--ink);
+    font-family: 'Lexend', sans-serif;
+    min-height: 100vh;
+    padding: 32px 16px 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── Header ── */
+  .header {
+    width: 100%;
+    max-width: 1080px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    animation: fadeUp 0.5s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .header-left {}
+  .eyebrow {
+    font-family: 'Spline Sans Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 900;
+    color: var(--ink);
+    letter-spacing: -1.5px;
+    line-height: 1;
+  }
+  .header h1 span { color: var(--accent2); }
+  .header-sub {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 4px;
+    font-weight: 400;
+    font-family: 'Spline Sans Mono', monospace;
+    letter-spacing: 1px;
+  }
+  .header-right {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  /* ── Layout ── */
+  .layout {
+    width: 100%;
+    max-width: 1080px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 14px;
+    animation: fadeUp 0.5s 0.1s ease both;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.2s;
+  }
+  .card:hover { box-shadow: var(--shadow-lg); }
+  .card-head {
+    padding: 14px 18px 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-title {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'Spline Sans Mono', monospace;
+  }
+  .chip {
+    font-family: 'Spline Sans Mono', monospace;
+    font-size: 0.6rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .chip-blue   { background: var(--accent-bg);  color: var(--accent); }
+  .chip-green  { background: var(--green-bg);   color: var(--green); }
+  .chip-red    { background: var(--red-bg);     color: var(--red); }
+  .chip-orange { background: var(--orange-bg);  color: var(--orange); }
+  .chip-purple { background: var(--purple-bg);  color: var(--purple); }
+
+  /* ── Input card (full width) ── */
+  .card-input { grid-column: 1 / -1; }
+  .input-body {
+    padding: 16px 18px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+  .input-group { display: flex; flex-direction: column; gap: 5px; }
+  .input-label {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'Spline Sans Mono', monospace;
+  }
+  input[type="number"], input[type="text"] {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    color: var(--ink);
+    font-family: 'Lexend', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 9px 13px;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 180px;
+  }
+  input[type="number"] { width: 110px; }
+  input:focus {
+    border-color: var(--accent2);
+    box-shadow: 0 0 0 3px rgba(59,122,252,0.12);
+    background: #fff;
+  }
+  input::placeholder { color: var(--muted); font-weight: 300; }
+
+  .btn {
+    font-family: 'Lexend', sans-serif;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 9px 20px;
+    border-radius: 8px;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 40px;
+  }
+  .btn:active:not(:disabled) { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn-primary { background: var(--accent2); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: var(--accent); box-shadow: 0 4px 12px rgba(59,122,252,0.3); }
+  .btn-ghost   { background: transparent; border-color: var(--border2); color: var(--ink2); }
+  .btn-ghost:hover { border-color: var(--accent2); color: var(--accent2); background: var(--accent-bg); }
+  .btn-danger  { background: transparent; border-color: var(--border); color: var(--muted); }
+  .btn-danger:hover { border-color: var(--red); color: var(--red); background: var(--red-bg); }
+
+  .divider-v { width: 1px; height: 40px; background: var(--border); flex-shrink: 0; }
+
+  /* ── Stat cards ── */
+  .stat-card { padding: 20px 22px; }
+  .stat-super {
+    font-family: 'Spline Sans Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-size: 2.8rem;
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+  .stat-value.blue   { color: var(--accent2); }
+  .stat-value.green  { color: var(--green); }
+  .stat-value.red    { color: var(--red); }
+  .stat-value.orange { color: var(--orange); }
+  .stat-value.purple { color: var(--purple); }
+  .stat-sub {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 4px;
+    font-weight: 400;
+  }
+  .stat-algo {
+    font-family: 'Spline Sans Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--border2);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── Array visualizer (full width) ── */
+  .array-card { grid-column: 1 / -1; }
+  .array-body {
+    padding: 16px 18px 20px;
+    overflow-x: auto;
+  }
+  .array-body::-webkit-scrollbar { height: 4px; }
+  .array-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .array-track {
+    display: flex;
+    gap: 6px;
+    min-width: max-content;
+    align-items: flex-end;
+    padding-bottom: 4px;
+  }
+
+  .arr-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    animation: cellIn 0.3s cubic-bezier(.175,.885,.32,1.275) both;
+  }
+  @keyframes cellIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.85); }
+    to   { opacity: 1; transform: none; }
+  }
+  .cell-box {
+    width: 46px;
+    height: 46px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border: 2px solid;
+    transition: all 0.3s;
+    cursor: default;
+    position: relative;
+  }
+  .cell-box.normal  { background: var(--surface2); border-color: var(--border); color: var(--ink2); }
+  .cell-box.is-min  { background: var(--red-bg);    border-color: var(--red);    color: var(--red); }
+  .cell-box.is-max  { background: var(--green-bg);  border-color: var(--green);  color: var(--green); }
+  .cell-box.is-mode { background: var(--purple-bg); border-color: var(--purple); color: var(--purple); }
+  .cell-box.is-min.is-mode  { background: linear-gradient(135deg, var(--red-bg), var(--purple-bg)); border-color: var(--purple); color: var(--purple); }
+  .cell-box.is-max.is-mode  { background: linear-gradient(135deg, var(--green-bg), var(--purple-bg)); border-color: var(--purple); color: var(--purple); }
+
+  .cell-flag {
+    position: absolute;
+    top: -10px;
+    font-size: 0.5rem;
+    font-family: 'Spline Sans Mono', monospace;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .flag-min  { background: var(--red);    color: #fff; }
+  .flag-max  { background: var(--green);  color: #fff; }
+  .flag-mode { background: var(--purple); color: #fff; }
+
+  .cell-idx {
+    font-family: 'Spline Sans Mono', monospace;
+    font-size: 0.5rem;
+    color: var(--muted);
+  }
+  .cell-name {
+    font-size: 0.55rem;
+    color: var(--ink2);
+    font-weight: 500;
+    max-width: 46px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .array-empty {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-family: 'Spline Sans Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── Frequency chart ── */
+  .freq-card { grid-column: 1 / 3; }
+  .freq-body { padding: 16px 18px 18px; overflow-x: auto; }
+  .freq-body::-webkit-scrollbar { height: 4px; }
+  .freq-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .freq-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    min-height: 160px;
+    min-width: max-content;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0;
+    position: relative;
+  }
+  .freq-bar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .freq-count {
+    font-family: 'Spline Sans Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .freq-bar {
+    width: 34px;
+    border-radius: 6px 6px 0 0;
+    transition: height 0.4s cubic-bezier(.175,.885,.32,1.275), background 0.3s;
+    min-height: 4px;
+    position: relative;
+  }
+  .freq-bar.normal { background: var(--accent-bg); border: 1.5px solid var(--border); border-bottom: none; }
+  .freq-bar.mode   { background: var(--purple-bg); border: 1.5px solid var(--purple); border-bottom: none; }
+  .freq-label {
+    font-family: 'Spline Sans Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--ink2);
+    font-weight: 600;
+    padding-top: 5px;
+  }
+
+  .freq-empty {
+    width: 100%; text-align: center;
+    color: var(--muted);
+    font-family: 'Spline Sans Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    padding: 40px 0;
+  }
+
+  /* ── Score list ── */
+  .list-card { grid-column: 3; }
+  .score-list { padding: 10px 14px; max-height: 260px; overflow-y: auto; }
+  .score-list::-webkit-scrollbar { width: 3px; }
+  .score-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    transition: all 0.2s;
+    animation: rowIn 0.25s ease both;
+  }
+  @keyframes rowIn {
+    from { opacity:0; transform:translateX(8px); }
+    to   { opacity:1; transform:none; }
+  }
+  .score-row:hover { border-color: var(--border2); }
+  .score-row.row-min { border-color: rgba(220,38,38,0.3); background: var(--red-bg); }
+  .score-row.row-max { border-color: rgba(5,150,105,0.3); background: var(--green-bg); }
+  .score-row.row-mode { border-color: rgba(124,58,237,0.3); background: var(--purple-bg); }
+
+  .sr-num { font-family:'Spline Sans Mono',monospace; font-size:0.6rem; color:var(--muted); width:20px; text-align:right; flex-shrink:0; }
+  .sr-name { flex:1; font-size:0.8rem; font-weight:500; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .sr-score { font-family:'Spline Sans Mono',monospace; font-size:0.88rem; font-weight:700; }
+  .sr-score.high { color: var(--green); }
+  .sr-score.mid  { color: var(--accent2); }
+  .sr-score.low  { color: var(--red); }
+  .sr-del { background:none; border:none; cursor:pointer; color:var(--border2); font-size:0.8rem; padding:2px 5px; border-radius:4px; transition:all 0.15s; opacity:0; }
+  .score-row:hover .sr-del { opacity:1; }
+  .sr-del:hover { background:var(--red-bg); color:var(--red); }
+
+  .list-empty { padding:30px; text-align:center; color:var(--muted); font-size:0.72rem; font-family:'Spline Sans Mono',monospace; letter-spacing:2px; }
+
+  /* ── Log ── */
+  .log-card { grid-column: 1 / -1; }
+  .log-body { padding: 10px 18px; max-height: 100px; overflow-y:auto; font-family:'Spline Sans Mono',monospace; font-size:0.6rem; }
+  .log-body::-webkit-scrollbar { width:3px; }
+  .log-body::-webkit-scrollbar-thumb { background:var(--border); }
+  .log-entry { display:flex; gap:10px; padding:3px 0; border-bottom:1px solid var(--border); }
+  .log-t  { color:var(--muted); flex-shrink:0; }
+  .log-m  { color:var(--ink2); }
+  .log-m.ok { color:var(--green); }
+  .log-m.err { color:var(--red); }
+  .log-m.inf { color:var(--accent2); }
+
+  /* ── Toast ── */
+  #toast {
+    position:fixed; bottom:24px; left:50%;
+    transform:translateX(-50%) translateY(40px);
+    background:var(--ink); color:#fff;
+    padding:9px 22px; border-radius:40px;
+    font-size:0.78rem; font-weight:600;
+    opacity:0; transition:all 0.25s; pointer-events:none; z-index:999; white-space:nowrap;
+  }
+  #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  #toast.err  { background:var(--red); }
+
+  @media(max-width:720px) {
+    .layout { grid-template-columns:1fr 1fr; }
+    .card-input, .array-card, .log-card { grid-column:1/-1; }
+    .freq-card { grid-column:1/-1; }
+    .list-card { grid-column:1/-1; }
+  }
+  @media(max-width:480px) {
+    .layout { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="eyebrow">Data Structures · Topic 20</div>
+    <h1>Exam Score <span>Tracker</span></h1>
+    <div class="header-sub">array · frequency[] · linear traversal · min / max / mode</div>
+  </div>
+  <div class="header-right">
+    <button class="btn btn-ghost" onclick="loadSample()">Load Sample Data</button>
+    <button class="btn btn-danger" onclick="clearAll()">Clear All</button>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- Input row -->
+  <div class="card card-input">
+    <div class="card-head">
+      <span class="card-title">Add Score Entry</span>
+      <span class="chip chip-blue" id="count-chip">0 entries</span>
+    </div>
+    <div class="input-body">
+      <div class="input-group">
+        <label class="input-label">Student Name</label>
+        <input type="text" id="inp-name" placeholder="e.g. Priya Sharma" maxlength="22"/>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Score (0–100)</label>
+        <input type="number" id="inp-score" placeholder="e.g. 87" min="0" max="100"/>
+      </div>
+      <button class="btn btn-primary" onclick="addScore()">+ Add Entry</button>
+      <div class="divider-v"></div>
+      <div class="input-group">
+        <label class="input-label">Batch Add (comma-separated scores)</label>
+        <input type="text" id="inp-batch" placeholder="e.g. 72, 85, 90, 65, 90"/>
+      </div>
+      <button class="btn btn-ghost" onclick="batchAdd()">Batch Insert</button>
+    </div>
+  </div>
+
+  <!-- Stat: Min -->
+  <div class="card">
+    <div class="card-head"><span class="card-title">Minimum</span><span class="chip chip-red">MIN</span></div>
+    <div class="stat-card">
+      <div class="stat-super">Lowest Score</div>
+      <div class="stat-value red" id="stat-min">—</div>
+      <div class="stat-sub" id="stat-min-name">No data</div>
+      <div class="stat-algo">linear scan: track smallest seen</div>
+    </div>
+  </div>
+
+  <!-- Stat: Max -->
+  <div class="card">
+    <div class="card-head"><span class="card-title">Maximum</span><span class="chip chip-green">MAX</span></div>
+    <div class="stat-card">
+      <div class="stat-super">Highest Score</div>
+      <div class="stat-value green" id="stat-max">—</div>
+      <div class="stat-sub" id="stat-max-name">No data</div>
+      <div class="stat-algo">linear scan: track largest seen</div>
+    </div>
+  </div>
+
+  <!-- Stat: Mode -->
+  <div class="card">
+    <div class="card-head"><span class="card-title">Mode</span><span class="chip chip-purple">MODE</span></div>
+    <div class="stat-card">
+      <div class="stat-super">Most Frequent Score</div>
+      <div class="stat-value purple" id="stat-mode">—</div>
+      <div class="stat-sub" id="stat-mode-freq">No data</div>
+      <div class="stat-algo">freq[score]++ → scan for max freq</div>
+    </div>
+  </div>
+
+  <!-- Array visualizer -->
+  <div class="card array-card">
+    <div class="card-head">
+      <span class="card-title">Score Array — scores[]</span>
+      <span class="chip chip-blue" id="arr-chip">length: 0</span>
+    </div>
+    <div class="array-body">
+      <div class="array-track" id="array-track">
+        <div class="array-empty">Add scores to populate the array</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Frequency chart -->
+  <div class="card freq-card">
+    <div class="card-head">
+      <span class="card-title">Frequency Array — freq[0..100]</span>
+      <span class="chip chip-purple" id="freq-chip">freq[] all zeros</span>
+    </div>
+    <div class="freq-body">
+      <div class="freq-chart" id="freq-chart">
+        <div class="freq-empty">No scores yet — freq[] is all 0s</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Score list -->
+  <div class="card list-card">
+    <div class="card-head">
+      <span class="card-title">Student Records</span>
+      <span class="chip chip-orange" id="avg-chip">avg: —</span>
+    </div>
+    <div class="score-list" id="score-list">
+      <div class="list-empty">No entries yet</div>
+    </div>
+  </div>
+
+  <!-- Log -->
+  <div class="card log-card">
+    <div class="card-head"><span class="card-title">Operation Log</span></div>
+    <div class="log-body" id="log-body">
+      <div class="log-entry"><span class="log-t">--:--:--</span><span class="log-m inf">System ready. scores[] initialized empty. freq[0..100] = 0.</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────
+let scores  = [];       // Array of {name, score}
+let freq    = new Array(101).fill(0);  // freq[0..100]
+let opCount = 0;
+
+// ── Core operations ──────────────────────────────────────────
+
+// Add a score: push to array, increment freq[score]
+function _add(name, score) {
+  scores.push({ name, score });
+  freq[score]++;
+  opCount++;
+}
+
+// Remove by index: splice from array, decrement freq[score]
+function _remove(idx) {
+  const removed = scores[idx];
+  freq[removed.score]--;
+  scores.splice(idx, 1);
+  opCount++;
+  return removed;
+}
+
+// Linear traversal: find min
+function findMin() {
+  if (!scores.length) return null;
+  let minVal = scores[0].score;
+  for (let i = 1; i < scores.length; i++) {
+    if (scores[i].score < minVal) minVal = scores[i].score;
+  }
+  return minVal;
+}
+
+// Linear traversal: find max
+function findMax() {
+  if (!scores.length) return null;
+  let maxVal = scores[0].score;
+  for (let i = 1; i < scores.length; i++) {
+    if (scores[i].score > maxVal) maxVal = scores[i].score;
+  }
+  return maxVal;
+}
+
+// Linear traversal over freq[]: find mode (most frequent score)
+function findMode() {
+  if (!scores.length) return null;
+  let modeVal = -1, modeFreq = 0;
+  for (let s = 0; s <= 100; s++) {
+    if (freq[s] > modeFreq) { modeFreq = freq[s]; modeVal = s; }
+  }
+  return { val: modeVal, freq: modeFreq };
+}
+
+// ── User actions ─────────────────────────────────────────────
+function addScore() {
+  const nameEl  = document.getElementById('inp-name');
+  const scoreEl = document.getElementById('inp-score');
+  const name    = nameEl.value.trim() || autoName();
+  const score   = parseInt(scoreEl.value);
+
+  if (isNaN(score) || score < 0 || score > 100) {
+    toast('Score must be 0–100', true);
+    return;
+  }
+  _add(name, score);
+  nameEl.value  = '';
+  scoreEl.value = '';
+  log(`scores.push({name:"${name}", score:${score}}) | freq[${score}]++ → ${freq[score]}`, 'ok');
+  toast(`✓ ${name}: ${score}`);
+  render();
+}
+
+function batchAdd() {
+  const inp = document.getElementById('inp-batch');
+  const raw = inp.value.split(',').map(s => s.trim()).filter(Boolean);
+  if (!raw.length) { toast('Enter comma-separated scores', true); return; }
+  let added = 0;
+  raw.forEach(s => {
+    const v = parseInt(s);
+    if (!isNaN(v) && v >= 0 && v <= 100) {
+      _add(autoName(), v);
+      added++;
+    }
+  });
+  inp.value = '';
+  log(`Batch insert: ${added} scores added. Array length now ${scores.length}.`, 'ok');
+  toast(`✓ ${added} scores added`);
+  render();
+}
+
+function removeScore(idx) {
+  const r = _remove(idx);
+  log(`scores.splice(${idx},1) | removed "${r.name}" score=${r.score} | freq[${r.score}]-- → ${freq[r.score]}`, 'err');
+  toast(`Removed ${r.name}: ${r.score}`);
+  render();
+}
+
+function clearAll() {
+  scores = []; freq = new Array(101).fill(0); opCount = 0;
+  log('scores[] cleared. freq[0..100] reset to 0.', 'inf');
+  toast('All data cleared');
+  render();
+}
+
+let nameIdx = 0;
+const NAMES = ['Aanya','Arjun','Bela','Chirag','Deepa','Eshan','Fatima','Gaurav',
+  'Hina','Ishaan','Jaya','Karan','Lata','Mihir','Neha','Om','Pooja','Rahul',
+  'Sanvi','Tejas','Usha','Varun','Wren','Xena','Yash','Zara'];
+function autoName() { return NAMES[nameIdx++ % NAMES.length]; }
+
+function loadSample() {
+  clearAll();
+  const sample = [72,85,90,65,90,78,55,90,82,67,74,88,90,61,77,83,55,96,72,85];
+  sample.forEach(s => _add(autoName(), s));
+  log(`Sample data loaded: ${scores.length} entries. scores[] = [${sample.join(', ')}]`, 'inf');
+  toast('Sample data loaded');
+  render();
+}
+
+// ── Render ───────────────────────────────────────────────────
+function render() {
+  const minVal  = findMin();
+  const maxVal  = findMax();
+  const modeRes = findMode();
+
+  renderStats(minVal, maxVal, modeRes);
+  renderArray(minVal, maxVal, modeRes);
+  renderFreq(modeRes);
+  renderList(minVal, maxVal, modeRes);
+  renderCounts();
+}
+
+function renderStats(minVal, maxVal, modeRes) {
+  if (scores.length === 0) {
+    document.getElementById('stat-min').textContent      = '—';
+    document.getElementById('stat-min-name').textContent = 'No data';
+    document.getElementById('stat-max').textContent      = '—';
+    document.getElementById('stat-max-name').textContent = 'No data';
+    document.getElementById('stat-mode').textContent     = '—';
+    document.getElementById('stat-mode-freq').textContent= 'No data';
+    return;
+  }
+  // min
+  const minStudents = scores.filter(s=>s.score===minVal).map(s=>s.name);
+  document.getElementById('stat-min').textContent      = minVal;
+  document.getElementById('stat-min-name').textContent = minStudents.slice(0,2).join(', ') + (minStudents.length>2?'…':'');
+
+  // max
+  const maxStudents = scores.filter(s=>s.score===maxVal).map(s=>s.name);
+  document.getElementById('stat-max').textContent      = maxVal;
+  document.getElementById('stat-max-name').textContent = maxStudents.slice(0,2).join(', ') + (maxStudents.length>2?'…':'');
+
+  // mode
+  document.getElementById('stat-mode').textContent      = modeRes.val;
+  document.getElementById('stat-mode-freq').textContent = `appeared ${modeRes.freq}×`;
+}
+
+function renderArray(minVal, maxVal, modeRes) {
+  const track = document.getElementById('array-track');
+  document.getElementById('arr-chip').textContent = `length: ${scores.length}`;
+
+  if (!scores.length) {
+    track.innerHTML = '<div class="array-empty">scores[] is empty</div>';
+    return;
+  }
+
+  track.innerHTML = scores.map((s, i) => {
+    const isMin  = s.score === minVal;
+    const isMax  = s.score === maxVal;
+    const isMode = modeRes && s.score === modeRes.val && modeRes.freq > 1;
+
+    let cls = 'cell-box normal';
+    if (isMin && isMode) cls = 'cell-box is-min is-mode';
+    else if (isMax && isMode) cls = 'cell-box is-max is-mode';
+    else if (isMin)  cls = 'cell-box is-min';
+    else if (isMax)  cls = 'cell-box is-max';
+    else if (isMode) cls = 'cell-box is-mode';
+
+    const flags = [];
+    if (isMin)  flags.push(`<span class="cell-flag flag-min">MIN</span>`);
+    if (isMax)  flags.push(`<span class="cell-flag flag-max" style="top:-22px">MAX</span>`);
+    if (isMode && modeRes.freq > 1) flags.push(`<span class="cell-flag flag-mode" style="top:${isMin||isMax?'-34px':'-10px'}">MODE</span>`);
+
+    return `<div class="arr-cell" style="animation-delay:${i*0.03}s">
+      <div class="${cls}">${flags.join('')}${s.score}</div>
+      <div class="cell-idx">[${i}]</div>
+      <div class="cell-name">${esc(s.name.split(' ')[0])}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderFreq(modeRes) {
+  const chart = document.getElementById('freq-chart');
+
+  // find non-zero buckets
+  const nonzero = [];
+  for (let s = 0; s <= 100; s++) { if (freq[s] > 0) nonzero.push(s); }
+
+  if (!nonzero.length) {
+    chart.innerHTML = '<div class="freq-empty">freq[0..100] — all zeros</div>';
+    document.getElementById('freq-chip').textContent = 'freq[] all zeros';
+    return;
+  }
+
+  const maxFreq = Math.max(...nonzero.map(s => freq[s]));
+  const MAX_H   = 130;
+
+  document.getElementById('freq-chip').textContent =
+    `${nonzero.length} distinct score${nonzero.length!==1?'s':''}`;
+
+  chart.innerHTML = nonzero.map(s => {
+    const h      = Math.max(4, Math.round((freq[s] / maxFreq) * MAX_H));
+    const isMode = modeRes && s === modeRes.val && modeRes.freq > 1;
+    return `<div class="freq-bar-wrap">
+      <div class="freq-count">${freq[s]}</div>
+      <div class="freq-bar ${isMode?'mode':'normal'}" style="height:${h}px"></div>
+      <div class="freq-label">${s}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderList(minVal, maxVal, modeRes) {
+  const list = document.getElementById('score-list');
+  if (!scores.length) {
+    list.innerHTML = '<div class="list-empty">No student records</div>';
+    document.getElementById('avg-chip').textContent = 'avg: —';
+    return;
+  }
+
+  const avg = (scores.reduce((a,b)=>a+b.score,0)/scores.length).toFixed(1);
+  document.getElementById('avg-chip').textContent = `avg: ${avg}`;
+
+  list.innerHTML = scores.map((s, i) => {
+    const isMin  = s.score === minVal;
+    const isMax  = s.score === maxVal;
+    const isMode = modeRes && s.score === modeRes.val && modeRes.freq > 1;
+    let rowCls = 'score-row';
+    if (isMode) rowCls += ' row-mode';
+    else if (isMin) rowCls += ' row-min';
+    else if (isMax) rowCls += ' row-max';
+
+    let scoreCls = 'sr-score mid';
+    if (s.score >= 80) scoreCls = 'sr-score high';
+    if (s.score < 50)  scoreCls = 'sr-score low';
+
+    return `<div class="${rowCls}">
+      <span class="sr-num">${i+1}</span>
+      <span class="sr-name">${esc(s.name)}</span>
+      <span class="${scoreCls}">${s.score}</span>
+      <button class="sr-del" onclick="removeScore(${i})" title="Remove">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function renderCounts() {
+  document.getElementById('count-chip').textContent = `${scores.length} entr${scores.length===1?'y':'ies'}`;
+}
+
+// ── Helpers ──────────────────────────────────────────────────
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function log(msg, type='') {
+  const body = document.getElementById('log-body');
+  const div  = document.createElement('div');
+  div.className = 'log-entry';
+  div.innerHTML = `<span class="log-t">${timeNow()}</span><span class="log-m ${type}">${msg}</span>`;
+  body.prepend(div);
+  while (body.children.length > 40) body.lastChild.remove();
+}
+
+function timeNow() {
+  return new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+let toastT;
+function toast(msg, err=false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (err?' err':'');
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>el.className='', 2300);
+}
+
+// Enter key
+document.getElementById('inp-score').addEventListener('keydown', e => { if(e.key==='Enter') addScore(); });
+document.getElementById('inp-batch').addEventListener('keydown', e => { if(e.key==='Enter') batchAdd(); });
+
+// Initial render
+render();
+</script>
+</body>
+</html>
