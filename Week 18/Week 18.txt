@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>File System Directory — Binary Tree</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #080c10;
+    --surface:  #0d1117;
+    --surface2: #111820;
+    --border:   #1e2d3d;
+    --border2:  #243344;
+    --cyan:     #00d4ff;
+    --cyan2:    #00aacc;
+    --green:    #3ddc84;
+    --yellow:   #f0c040;
+    --red:      #ff5566;
+    --purple:   #b388ff;
+    --text:     #c9d8e8;
+    --muted:    #3d5166;
+    --dim:      #1a2535;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    background-image: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,212,255,0.07) 0%, transparent 60%);
+    color: var(--text);
+    font-family: 'Fira Code', monospace;
+    min-height: 100vh;
+    padding: 28px 14px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 28px; }
+  .header-eyebrow {
+    font-size: 0.6rem;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 6px;
+    opacity: 0.7;
+  }
+  .header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    letter-spacing: 3px;
+    color: #fff;
+    line-height: 1;
+    text-shadow: 0 0 40px rgba(0,212,255,0.3);
+  }
+  .header h1 span { color: var(--cyan); }
+  .header p { font-size: 0.65rem; color: var(--muted); margin-top: 6px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* ── Layout ── */
+  .layout {
+    width: 100%;
+    max-width: 1100px;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 14px;
+  }
+
+  /* ── Panel ── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .panel-head {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .panel-head .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .dot-cyan   { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+  .dot-green  { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot-yellow { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+  .dot-purple { background: var(--purple); box-shadow: 0 0 6px var(--purple); }
+
+  /* ── Left: Controls ── */
+  .ctrl-body { padding: 14px; }
+  .field-label { font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .field-group { margin-bottom: 14px; }
+  input[type="text"] {
+    width: 100%;
+    background: var(--dim);
+    border: 1px solid var(--border2);
+    color: var(--cyan);
+    font-family: 'Fira Code', monospace;
+    font-size: 0.8rem;
+    padding: 9px 12px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input:focus { border-color: var(--cyan); box-shadow: 0 0 0 2px rgba(0,212,255,0.1); }
+  input::placeholder { color: var(--muted); }
+
+  .btn {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    padding: 9px 14px;
+    border-radius: 4px;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 100%;
+    margin-bottom: 7px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .btn:active:not(:disabled) { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.25; cursor: not-allowed; }
+  .btn-insert { background: rgba(0,212,255,0.08); border-color: var(--cyan); color: var(--cyan); }
+  .btn-insert:hover:not(:disabled) { background: rgba(0,212,255,0.15); box-shadow: 0 0 12px rgba(0,212,255,0.2); }
+  .btn-pre    { background: rgba(61,220,132,0.07); border-color: var(--green); color: var(--green); }
+  .btn-pre:hover { background: rgba(61,220,132,0.15); }
+  .btn-in     { background: rgba(240,192,64,0.07); border-color: var(--yellow); color: var(--yellow); }
+  .btn-in:hover { background: rgba(240,192,64,0.15); }
+  .btn-post   { background: rgba(179,136,255,0.07); border-color: var(--purple); color: var(--purple); }
+  .btn-post:hover { background: rgba(179,136,255,0.15); }
+  .btn-reset  { background: rgba(255,85,102,0.07); border-color: var(--red); color: var(--red); }
+  .btn-reset:hover { background: rgba(255,85,102,0.15); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+
+  /* ── Tree canvas ── */
+  .tree-panel { grid-column: 2; grid-row: 1 / 3; display: flex; flex-direction: column; }
+  #tree-canvas-wrap {
+    flex: 1;
+    overflow: auto;
+    padding: 20px;
+    min-height: 380px;
+    position: relative;
+  }
+  #tree-svg { display: block; }
+
+  /* ── Traversal output ── */
+  .traversal-panel { grid-column: 1; }
+  .trav-body { padding: 12px 14px; }
+  .trav-row {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--dim);
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+  .trav-label {
+    font-size: 0.58rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+  .trav-label.pre  { color: var(--green); }
+  .trav-label.in   { color: var(--yellow); }
+  .trav-label.post { color: var(--purple); }
+  .trav-nodes {
+    font-size: 0.72rem;
+    color: var(--text);
+    word-break: break-all;
+    line-height: 1.8;
+  }
+  .trav-nodes .tn {
+    display: inline-block;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border2);
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin: 2px 3px;
+    transition: all 0.2s;
+  }
+  .tn.pre  { border-color: rgba(61,220,132,0.4); color: var(--green); }
+  .tn.in   { border-color: rgba(240,192,64,0.4); color: var(--yellow); }
+  .tn.post { border-color: rgba(179,136,255,0.4); color: var(--purple); }
+
+  .trav-empty { color: var(--muted); font-size: 0.7rem; padding: 8px 0; }
+
+  /* ── Log ── */
+  .log-panel { grid-column: 1; }
+  .log-body {
+    padding: 10px 14px;
+    max-height: 140px;
+    overflow-y: auto;
+    font-size: 0.66rem;
+  }
+  .log-body::-webkit-scrollbar { width: 3px; }
+  .log-body::-webkit-scrollbar-thumb { background: var(--border2); }
+  .log-entry { display: flex; gap: 8px; padding: 3px 0; border-bottom: 1px solid rgba(30,45,61,0.5); animation: fadeIn 0.2s; }
+  .log-t  { color: var(--muted); flex-shrink: 0; }
+  .log-m  { color: var(--text); }
+  .log-m.ok  { color: var(--green); }
+  .log-m.err { color: var(--red); }
+  .log-m.inf { color: var(--cyan); }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(40px);
+    background: var(--surface2); border: 1px solid var(--cyan);
+    color: var(--cyan); padding: 8px 22px; border-radius: 4px;
+    font-size: 0.72rem; letter-spacing: 1px;
+    opacity: 0; transition: all 0.25s; pointer-events: none; z-index: 999;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.err  { border-color: var(--red); color: var(--red); }
+
+  @media(max-width: 720px) {
+    .layout { grid-template-columns: 1fr; }
+    .tree-panel { grid-column: 1; grid-row: auto; }
+    .traversal-panel, .log-panel { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>FILE<span>/</span>SYSTEM</h1>
+  <p>Binary Tree · Insert · Pre / In / Post-Order Traversal</p>
+</div>
+
+<div class="layout">
+
+  <!-- LEFT COL: Controls -->
+  <div class="panel" style="grid-column:1; grid-row:1;">
+    <div class="panel-head">
+      <span><span class="dot dot-cyan"></span>Explorer</span>
+    </div>
+    <div class="ctrl-body">
+      <div class="field-group">
+        <div class="field-label">Directory / File Name</div>
+        <input type="text" id="node-input" placeholder="e.g. Documents" maxlength="14"/>
+      </div>
+      <button class="btn btn-insert" id="btn-insert" onclick="insertNode()">
+        <span>📁</span> Insert Node
+      </button>
+      <hr class="divider">
+      <div class="field-label" style="margin-bottom:10px;">Traversals</div>
+      <button class="btn btn-pre"  onclick="runTraversal('pre')">▶ Pre-Order &nbsp;(Root→L→R)</button>
+      <button class="btn btn-in"   onclick="runTraversal('in')">▶ In-Order &nbsp;&nbsp;(L→Root→R)</button>
+      <button class="btn btn-post" onclick="runTraversal('post')">▶ Post-Order (L→R→Root)</button>
+      <hr class="divider">
+      <button class="btn btn-reset" onclick="resetTree()">✕ Reset Tree</button>
+    </div>
+  </div>
+
+  <!-- TREE VISUALIZER (spans rows) -->
+  <div class="panel tree-panel">
+    <div class="panel-head">
+      <span><span class="dot dot-cyan"></span>Binary Tree — File Hierarchy</span>
+      <span id="node-count" style="color:var(--cyan);font-size:0.65rem;">0 nodes</span>
+    </div>
+    <div id="tree-canvas-wrap">
+      <svg id="tree-svg" width="600" height="360"></svg>
+    </div>
+  </div>
+
+  <!-- Traversal results -->
+  <div class="panel traversal-panel">
+    <div class="panel-head"><span><span class="dot dot-green"></span>Traversal Results</span></div>
+    <div class="trav-body" id="trav-body">
+      <div class="trav-empty">Run a traversal to see results here.</div>
+    </div>
+  </div>
+
+  <!-- Log -->
+  <div class="panel log-panel">
+    <div class="panel-head"><span><span class="dot dot-yellow"></span>Operation Log</span></div>
+    <div class="log-body" id="log-body">
+      <div class="log-entry"><span class="log-t">--:--</span><span class="log-m inf">Tree initialized. Insert a root node.</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Binary Tree Node ─────────────────────────────────────────
+class TreeNode {
+  constructor(val) {
+    this.val   = val;
+    this.left  = null;
+    this.right = null;
+  }
+}
+
+// BST insert (alphabetical order so tree is structured meaningfully)
+class BST {
+  constructor() { this.root = null; this.size = 0; }
+
+  insert(val) {
+    const node = new TreeNode(val);
+    if (!this.root) { this.root = node; this.size++; return true; }
+    let cur = this.root;
+    while (true) {
+      const cmp = val.toLowerCase().localeCompare(cur.val.toLowerCase());
+      if (cmp === 0) return false; // duplicate
+      if (cmp < 0) {
+        if (!cur.left)  { cur.left  = node; this.size++; return true; }
+        cur = cur.left;
+      } else {
+        if (!cur.right) { cur.right = node; this.size++; return true; }
+        cur = cur.right;
+      }
+    }
+  }
+
+  preOrder(node = this.root, res = []) {
+    if (!node) return res;
+    res.push(node.val);
+    this.preOrder(node.left, res);
+    this.preOrder(node.right, res);
+    return res;
+  }
+
+  inOrder(node = this.root, res = []) {
+    if (!node) return res;
+    this.inOrder(node.left, res);
+    res.push(node.val);
+    this.inOrder(node.right, res);
+    return res;
+  }
+
+  postOrder(node = this.root, res = []) {
+    if (!node) return res;
+    this.postOrder(node.left, res);
+    this.postOrder(node.right, res);
+    res.push(node.val);
+    return res;
+  }
+}
+
+const tree = new BST();
+
+// ── Icons by extension/name heuristic ───────────────────────
+function iconFor(name) {
+  const n = name.toLowerCase();
+  if (n.includes('.jpg') || n.includes('.png') || n.includes('.gif') || n.includes('.webp')) return '🖼';
+  if (n.includes('.mp3') || n.includes('.wav') || n.includes('music')) return '🎵';
+  if (n.includes('.mp4') || n.includes('.mov') || n.includes('video')) return '🎬';
+  if (n.includes('.pdf') || n.includes('.doc')) return '📄';
+  if (n.includes('.zip') || n.includes('.tar')) return '🗜';
+  if (n.includes('.js') || n.includes('.py') || n.includes('.cpp') || n.includes('.c')) return '⚙';
+  if (n.includes('.html') || n.includes('.css')) return '🌐';
+  if (n.includes('config') || n.includes('.env')) return '🔧';
+  if (n.includes('bin') || n.includes('usr') || n.includes('etc') || n.includes('root')) return '🔒';
+  return '📁';
+}
+
+// ── Insert ───────────────────────────────────────────────────
+function insertNode() {
+  const inp = document.getElementById('node-input');
+  const val = inp.value.trim();
+  if (!val) { toast('Enter a name first', true); return; }
+  if (!/^[\w\.\-]+$/.test(val)) { toast('Use letters, digits, . or -', true); return; }
+  if (!tree.insert(val)) {
+    toast(`"${val}" already exists`, true);
+    log(`Duplicate rejected: ${val}`, 'err');
+    return;
+  }
+  inp.value = '';
+  log(`Inserted: ${val} (size=${tree.size})`, 'ok');
+  toast(`${iconFor(val)} ${val} inserted`);
+  renderTree();
+  updateCount();
+}
+
+// ── Traversals ───────────────────────────────────────────────
+let lastTraversal = null;
+
+function runTraversal(type) {
+  if (!tree.root) { toast('Tree is empty', true); return; }
+  let result;
+  let label, cls;
+  if (type === 'pre')  { result = tree.preOrder();  label = 'Pre-Order  (Root → Left → Right)'; cls = 'pre';  }
+  if (type === 'in')   { result = tree.inOrder();   label = 'In-Order   (Left → Root → Right)'; cls = 'in';  }
+  if (type === 'post') { result = tree.postOrder(); label = 'Post-Order (Left → Right → Root)'; cls = 'post'; }
+
+  lastTraversal = { type, result };
+  log(`${label}: ${result.join(' → ')}`, 'inf');
+  renderTraversal(result, label, cls);
+  highlightTraversal(result, cls);
+}
+
+function renderTraversal(result, label, cls) {
+  const body = document.getElementById('trav-body');
+  // keep previous results (up to 3)
+  const existing = body.querySelectorAll('.trav-row');
+  if (existing.length >= 3) existing[0].remove();
+
+  const div = document.createElement('div');
+  div.className = 'trav-row';
+  div.innerHTML = `<div class="trav-label ${cls}">${label}</div>
+    <div class="trav-nodes">${result.map(n => `<span class="tn ${cls}">${iconFor(n)} ${n}</span>`).join('')}</div>`;
+  // remove empty placeholder
+  body.querySelector('.trav-empty')?.remove();
+  body.appendChild(div);
+}
+
+// ── Tree SVG Rendering ───────────────────────────────────────
+const NODE_R = 26;
+const H_GAP  = 14;
+const V_GAP  = 68;
+
+let highlightedNodes = new Set();
+let highlightClass   = '';
+
+function highlightTraversal(result, cls) {
+  highlightedNodes = new Set(result);
+  highlightClass   = cls;
+  renderTree();
+  // animate sequence
+  result.forEach((val, i) => {
+    setTimeout(() => {
+      highlightedNodes = new Set(result.slice(0, i+1));
+      renderTree();
+    }, i * 220);
+  });
+}
+
+function computeLayout(node, depth=0, counter={v:0}) {
+  if (!node) return;
+  computeLayout(node.left, depth+1, counter);
+  node._x = counter.v * (NODE_R * 2 + H_GAP);
+  node._y = depth * V_GAP;
+  counter.v++;
+  computeLayout(node.right, depth+1, counter);
+}
+
+function renderTree() {
+  const wrap = document.getElementById('tree-canvas-wrap');
+  const svg  = document.getElementById('tree-svg');
+
+  if (!tree.root) {
+    svg.innerHTML = `<text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle"
+      font-family="Fira Code" font-size="13" fill="#1e2d3d" letter-spacing="2">EMPTY TREE</text>`;
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '200');
+    return;
+  }
+
+  computeLayout(tree.root);
+
+  // collect all nodes
+  const nodes = [];
+  const edges = [];
+  function collect(node, parent=null) {
+    if (!node) return;
+    nodes.push(node);
+    if (parent) edges.push({ x1: parent._x, y1: parent._y, x2: node._x, y2: node._y });
+    collect(node.left, node);
+    collect(node.right, node);
+  }
+  collect(tree.root);
+
+  // bounds
+  const minX = Math.min(...nodes.map(n=>n._x));
+  const maxX = Math.max(...nodes.map(n=>n._x));
+  const maxY = Math.max(...nodes.map(n=>n._y));
+  const pad  = NODE_R + 20;
+  const W    = Math.max(600, maxX - minX + pad*2);
+  const H    = maxY + pad*2 + 20;
+  const offX = -minX + pad;
+  const offY = pad;
+
+  let out = '';
+
+  // edges
+  edges.forEach(e => {
+    out += `<line x1="${e.x1+offX}" y1="${e.y1+offY}" x2="${e.x2+offX}" y2="${e.y2+offY}"
+      stroke="#1e2d3d" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+  });
+
+  // nodes
+  nodes.forEach(node => {
+    const cx = node._x + offX;
+    const cy = node._y + offY;
+    const isRoot = (node === tree.root);
+    const isHL   = highlightedNodes.has(node.val);
+
+    let stroke = '#1e2d3d', strokeW = 1.5, fill = '#0d1117', glowId = '';
+    let textCol = '#c9d8e8';
+
+    if (isHL) {
+      if (highlightClass === 'pre')  { stroke = '#3ddc84'; fill = 'rgba(61,220,132,0.12)'; textCol='#3ddc84'; }
+      if (highlightClass === 'in')   { stroke = '#f0c040'; fill = 'rgba(240,192,64,0.12)'; textCol='#f0c040'; }
+      if (highlightClass === 'post') { stroke = '#b388ff'; fill = 'rgba(179,136,255,0.12)'; textCol='#b388ff'; }
+      strokeW = 2.5;
+    } else if (isRoot) {
+      stroke = '#00d4ff'; fill = 'rgba(0,212,255,0.1)'; strokeW = 2; textCol='#00d4ff';
+    }
+
+    // node circle
+    out += `<circle cx="${cx}" cy="${cy}" r="${NODE_R}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeW}"/>`;
+
+    // icon
+    const ico = iconFor(node.val);
+    out += `<text x="${cx}" y="${cy-7}" text-anchor="middle" dominant-baseline="middle"
+      font-size="12">${ico}</text>`;
+
+    // name (truncated)
+    const label = node.val.length > 9 ? node.val.slice(0,8)+'…' : node.val;
+    out += `<text x="${cx}" y="${cy+10}" text-anchor="middle" dominant-baseline="middle"
+      font-family="Fira Code" font-size="8.5" font-weight="500" fill="${textCol}">${label}</text>`;
+
+    // root badge
+    if (isRoot) {
+      out += `<text x="${cx}" y="${cy - NODE_R - 7}" text-anchor="middle"
+        font-family="Fira Code" font-size="7" fill="#00d4ff" letter-spacing="2">ROOT</text>`;
+    }
+  });
+
+  svg.innerHTML = out;
+  svg.setAttribute('width',  W);
+  svg.setAttribute('height', H);
+  wrap.style.minHeight = Math.max(320, H+20)+'px';
+}
+
+function updateCount() {
+  document.getElementById('node-count').textContent = tree.size + (tree.size===1?' node':' nodes');
+}
+
+function resetTree() {
+  tree.root = null; tree.size = 0;
+  highlightedNodes = new Set(); highlightClass = '';
+  document.getElementById('trav-body').innerHTML = '<div class="trav-empty">Run a traversal to see results here.</div>';
+  renderTree(); updateCount();
+  log('Tree reset.', 'err');
+  toast('Tree cleared');
+}
+
+// ── Log ──────────────────────────────────────────────────────
+function log(msg, type='') {
+  const body = document.getElementById('log-body');
+  const div  = document.createElement('div');
+  div.className = 'log-entry';
+  div.innerHTML = `<span class="log-t">${timeNow()}</span><span class="log-m ${type}">${msg}</span>`;
+  body.prepend(div);
+  while (body.children.length > 25) body.lastChild.remove();
+}
+
+function timeNow() {
+  return new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+let toastT;
+function toast(msg, err=false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (err ? ' err' : '');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.className='', 2200);
+}
+
+// Enter key
+document.getElementById('node-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') insertNode();
+});
+
+// ── Seed data ────────────────────────────────────────────────
+['root', 'home', 'usr', 'bin', 'etc', 'var', 'lib'].forEach(v => {
+  tree.insert(v);
+});
+renderTree();
+updateCount();
+log('Seeded with 7 default directories.', 'ok');
+</script>
+</body>
+</html>
